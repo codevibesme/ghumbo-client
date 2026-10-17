@@ -1,0 +1,384 @@
+@import "tailwindcss";
+
+/*
+ * Ghumbo · Ticket & passport design tokens.
+ * Source of truth: the "Ghumbo · Ticket" design canvas (boards B · Colour, type,
+ * parts / Components / Tour cards, light + dark).
+ *
+ * Raw values live on :root as --g-* so the theme can swap them; Tailwind
+ * utilities (bg-stock, text-ink, border-line …) read them through @theme inline.
+ * Some light colours split into two tokens in dark mode (e.g. passport as a fill
+ * vs. passport as text = "link"; ink as text vs. 1.5px outlines = "line").
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Grounds and surfaces */
+  --g-stock: #f2f4ec; /* Ticket stock · page ground, notch fill */
+  --g-card: #ffffff; /* Card white · cards, inputs */
+  --g-sunk: #f7f8f3; /* Prefix cells, strips */
+
+  /* Text and lines */
+  --g-ink: #1a2230; /* Body text */
+  --g-line: #1a2230; /* 1.5px outlines */
+  --g-muted: #4b5563; /* Secondary text */
+  --g-placeholder: #6b7280;
+  --g-tear: #b9c0ae; /* 2px dashed tear lines, taken seats */
+  --g-rule: #e2e5dc; /* Hairlines, sold-out chip, disabled */
+  --g-dash-muted: #4b5563; /* Pay-direct dashed outline */
+
+  /* Passport (primary) */
+  --g-passport: #1f3a5f; /* Fill: primary buttons, selected outlines */
+  --g-passport-hover: #152b48;
+  --g-on-passport: #f2f4ec;
+  --g-link: #1f3a5f; /* Passport as text: links, tertiary */
+  --g-passport-tint: #e3eaf3; /* Received, add-on chips */
+
+  /* Stamp red */
+  --g-red: #c2362b; /* Text/border: kickers, PEAK, errors */
+  --g-red-fill: #c2362b; /* Solid fills: last seat, destructive confirm */
+  --g-on-red: #ffffff;
+
+  /* Seats and status */
+  --g-signal: #2e8b6a; /* Open seat squares only */
+  --g-green: #1c6247; /* Open / booked text */
+  --g-green-tint: #dcefe6;
+  --g-seat-amber: #b07a00; /* Few-left seat squares only */
+  --g-amber: #7a5200; /* Few left / confirming text */
+  --g-amber-tint: #fbebc4;
+
+  /* Departure board, footer */
+  --g-board: #141a24;
+  --g-board-rule: #2a3342;
+  --g-board-dash: #3a4352;
+  --g-board-label: #b9c0ae;
+  --g-on-board: #f2f4ec;
+  --g-flap: #f4d35e; /* Flap yellow · data on the board */
+  --g-coral: #ff8a7a; /* Logo pin on dark only */
+
+  /* Bits */
+  --g-knob-off: #1a2230;
+  --g-stamp-backing: rgb(255 255 255 / 0.88);
+  --g-focus: #1f3a5f;
+}
+
+/* Dark values. Written twice: once for the OS preference (unless the user
+   picked light), once for an explicit data-theme="dark". */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --g-stock: #121821;
+    --g-card: #1b2330;
+    --g-sunk: #222b39;
+    --g-ink: #e8ebe2;
+    --g-line: #4e596b;
+    --g-muted: #a4adba;
+    --g-placeholder: #7e8898;
+    --g-tear: #3a4352;
+    --g-rule: #2a3342;
+    --g-dash-muted: #6b7686;
+    --g-passport: #30598f;
+    --g-passport-hover: #3a69a8;
+    --g-link: #9cc0ec;
+    --g-passport-tint: #1d2d45;
+    --g-red: #ff8a7a;
+    --g-signal: #3daa82;
+    --g-green: #7bd3ae;
+    --g-green-tint: #133528;
+    --g-seat-amber: #d69a20;
+    --g-amber: #f0c46a;
+    --g-amber-tint: #3a2b0c;
+    --g-board: #080b10;
+    --g-knob-off: #c9ced6;
+    --g-stamp-backing: rgb(27 35 48 / 0.88);
+    --g-focus: #f4d35e;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --g-stock: #121821;
+  --g-card: #1b2330;
+  --g-sunk: #222b39;
+  --g-ink: #e8ebe2;
+  --g-line: #4e596b;
+  --g-muted: #a4adba;
+  --g-placeholder: #7e8898;
+  --g-tear: #3a4352;
+  --g-rule: #2a3342;
+  --g-dash-muted: #6b7686;
+  --g-passport: #30598f;
+  --g-passport-hover: #3a69a8;
+  --g-link: #9cc0ec;
+  --g-passport-tint: #1d2d45;
+  --g-red: #ff8a7a;
+  --g-signal: #3daa82;
+  --g-green: #7bd3ae;
+  --g-green-tint: #133528;
+  --g-seat-amber: #d69a20;
+  --g-amber: #f0c46a;
+  --g-amber-tint: #3a2b0c;
+  --g-board: #080b10;
+  --g-knob-off: #c9ced6;
+  --g-stamp-backing: rgb(27 35 48 / 0.88);
+  --g-focus: #f4d35e;
+}
+
+@theme inline {
+  --color-stock: var(--g-stock);
+  --color-card: var(--g-card);
+  --color-sunk: var(--g-sunk);
+  --color-ink: var(--g-ink);
+  --color-line: var(--g-line);
+  --color-muted: var(--g-muted);
+  --color-placeholder: var(--g-placeholder);
+  --color-tear: var(--g-tear);
+  --color-rule: var(--g-rule);
+  --color-dash-muted: var(--g-dash-muted);
+  --color-passport: var(--g-passport);
+  --color-passport-hover: var(--g-passport-hover);
+  --color-on-passport: var(--g-on-passport);
+  --color-link: var(--g-link);
+  --color-passport-tint: var(--g-passport-tint);
+  --color-red: var(--g-red);
+  --color-red-fill: var(--g-red-fill);
+  --color-on-red: var(--g-on-red);
+  --color-signal: var(--g-signal);
+  --color-green: var(--g-green);
+  --color-green-tint: var(--g-green-tint);
+  --color-seat-amber: var(--g-seat-amber);
+  --color-amber: var(--g-amber);
+  --color-amber-tint: var(--g-amber-tint);
+  --color-board: var(--g-board);
+  --color-board-rule: var(--g-board-rule);
+  --color-board-dash: var(--g-board-dash);
+  --color-board-label: var(--g-board-label);
+  --color-on-board: var(--g-on-board);
+  --color-flap: var(--g-flap);
+  --color-coral: var(--g-coral);
+  --color-knob-off: var(--g-knob-off);
+  --color-stamp-backing: var(--g-stamp-backing);
+
+  --font-sans: var(--font-archivo), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+}
+
+@theme {
+  /* One breakpoint in the system: 720px. md: = desktop layout. */
+  --breakpoint-md: 45rem;
+
+  --radius-ticket: 6px; /* cards, buttons, inputs */
+  --radius-chip: 4px; /* badges, chips */
+}
+
+/* ------------------------------------------------------------------------ */
+/* Type scale. Mobile size first, desktop from 720px.                        */
+/* Archivo uses its width axis; display weights sit at 110–125% stretch.     */
+/* ------------------------------------------------------------------------ */
+
+@utility type-display {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-stretch: 125%;
+  letter-spacing: -0.03em;
+  font-size: 44px;
+  line-height: 1;
+  @media (width >= 45rem) {
+    font-size: 88px;
+    line-height: 0.95;
+  }
+}
+
+@utility type-h1 {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-stretch: 125%;
+  letter-spacing: -0.02em;
+  font-size: 36px;
+  line-height: 1.05;
+  @media (width >= 45rem) {
+    font-size: 56px;
+    line-height: 1;
+  }
+}
+
+@utility type-h2 {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-stretch: 125%;
+  letter-spacing: -0.02em;
+  font-size: 28px;
+  line-height: 1.1;
+  @media (width >= 45rem) {
+    font-size: 40px;
+    line-height: 1.05;
+  }
+}
+
+@utility type-h3 {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-stretch: 115%;
+  letter-spacing: -0.01em;
+  font-size: 19px;
+  line-height: 1.2;
+  @media (width >= 45rem) {
+    font-size: 22px;
+    line-height: 1.15;
+  }
+}
+
+@utility type-h4 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-stretch: 110%;
+  font-size: 17px;
+  line-height: 1.3;
+  @media (width >= 45rem) {
+    font-size: 18px;
+  }
+}
+
+@utility type-body-l {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 1.55;
+  @media (width >= 45rem) {
+    font-size: 19px;
+  }
+}
+
+@utility type-body {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+@utility type-small {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* Kickers, field labels, section eyebrows. */
+@utility type-label {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Small caps inside ticket stubs ("Next departure", "From, per person"). */
+@utility type-stub {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Dates, references, times: "SAT 26 DEC · 11:00 · GH-26DEC-4821". */
+@utility type-data {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  @media (width >= 45rem) {
+    font-size: 16px;
+  }
+}
+
+@utility type-price-l {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-stretch: 115%;
+  letter-spacing: -0.02em;
+  font-size: 30px;
+  line-height: 1;
+  @media (width >= 45rem) {
+    font-size: 36px;
+  }
+}
+
+@utility type-price-m {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-stretch: 115%;
+  letter-spacing: -0.02em;
+  font-size: 22px;
+  line-height: 1;
+  @media (width >= 45rem) {
+    font-size: 26px;
+  }
+}
+
+@utility type-price-s {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-stretch: 115%;
+  font-size: 18px;
+  line-height: 1;
+  @media (width >= 45rem) {
+    font-size: 20px;
+  }
+}
+
+/* ------------------------------------------------------------------------ */
+/* Layout and surfaces                                                       */
+/* ------------------------------------------------------------------------ */
+
+/* 1200 max incl. 24px side padding (1152 content); 16px gutters on mobile. */
+@utility page-container {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 16px;
+  @media (width >= 45rem) {
+    padding-inline: 24px;
+  }
+}
+
+/* White card with the 1.5px ink outline. Never overflow: hidden (notches). */
+@utility ticket-surface {
+  background-color: var(--g-card);
+  border: 1.5px solid var(--g-line);
+  border-radius: 6px;
+}
+
+/* Wrap any departure board / footer: keeps focus rings flap yellow. */
+@utility on-board {
+  --g-focus: var(--g-flap);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--g-stock);
+    color: var(--g-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--g-focus);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--g-passport-tint);
+    color: var(--g-ink);
+  }
+}
