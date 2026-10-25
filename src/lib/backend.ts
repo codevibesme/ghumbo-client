@@ -36,12 +36,12 @@ export async function get<T>(path: string, query?: Query): Promise<T> {
   for (const [k, v] of Object.entries(query ?? {})) if (v !== undefined) url.searchParams.set(k, String(v));
 
   const res = await fetch(url, { cache: "no-store" });
-  const data = await res.json().catch(() => null);
   if (!res.ok) {
+    const data = await res.json().catch(() => null);
     const message = Array.isArray(data?.message) ? data.message[0] : data?.message;
     throw new BackendError(res.status, message || res.statusText);
   }
-  return data as T;
+  return (await res.json()) as T;
 }
 
 /** GET that maps a 404 to null, for "find by slug" endpoints. */

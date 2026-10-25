@@ -4,7 +4,8 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { StickyActionBar } from "@/components/layout/sticky-action-bar";
-import { JsonLd, breadcrumbLd } from "@/components/seo/json-ld";
+import { breadcrumbLd } from "@/components/seo/breadcrumb-ld";
+import { JsonLd } from "@/components/seo/json-ld";
 import { Badge } from "@/components/ui/badge";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -19,7 +20,7 @@ import { RouteLine } from "@/features/tours/components/route-line";
 import { TourCard } from "@/features/tours/components/tour-cards";
 import { duration, mealsLine, toActivities, toTourSummaries } from "@/features/tours/mappers";
 import { type TripPageData, getTripPageData, shortName } from "@/features/tours/trip-data";
-import type { TripReview } from "@/features/tours/types";
+import type { Departure, TourSummary, TripReview } from "@/features/tours/types";
 import { FEW_SEATS, formatINR, pad2 } from "@/lib/format";
 
 export async function generateStaticParams() {
@@ -81,56 +82,9 @@ async function TripView({ data }: { data: TripPageData }) {
       <JsonLd data={tripLd(data, reviews.data)} />
       <JsonLd data={breadcrumbLd(crumbs)} />
 
-      <section className="page-container flex flex-col gap-4 pt-8 pb-6">
-        <Breadcrumb items={crumbs.map((c, i) => ({ label: c.name, href: i < crumbs.length - 1 ? c.path : undefined }))} />
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="type-label text-red">
-            {[ends.from && ends.to ? `${ends.from} → ${ends.to}` : null, destination?.name].filter(Boolean).join(" · ")}
-          </span>
-          {trip.isRecommended && <Badge tone="pick">Ghumbo pick</Badge>}
-        </div>
-        <h1 className="m-0 max-w-[20ch] type-h1">{trip.name}</h1>
-        <ul className="m-0 flex list-none flex-wrap gap-x-6 gap-y-2 p-0 type-label text-ink">
-          <li className="flex items-center gap-2">
-            <CalendarDays size={16} aria-hidden /> {trip.durationDays} days, {trip.durationNights} nights
-          </li>
-          {ends.from && (
-            <li className="flex items-center gap-2">
-              <MapPin size={16} aria-hidden /> From {ends.from}
-            </li>
-          )}
-          <li className="flex items-center gap-2">
-            <UsersRound size={16} aria-hidden /> Group of up to {capacity}
-          </li>
-        </ul>
-      </section>
+      <TripHeader data={data} crumbs={crumbs} capacity={capacity} />
 
-      {photos.length > 0 && (
-        <section className="page-container pb-10">
-          <div className="grid gap-3 md:h-[440px] md:grid-cols-4 md:grid-rows-2">
-            {photos.slice(0, 5).map((p, i) => (
-              <figure
-                key={p.url}
-                className={
-                  i === 0
-                    ? "relative m-0 h-[260px] overflow-hidden rounded-ticket border-[1.5px] border-line md:col-span-2 md:row-span-2 md:h-auto"
-                    : "relative m-0 hidden overflow-hidden rounded-ticket border-[1.5px] border-line md:block"
-                }
-              >
-                <Image
-                  src={p.url}
-                  alt={p.label ?? trip.name}
-                  title={p.description ?? undefined}
-                  fill
-                  priority={i === 0}
-                  sizes={i === 0 ? "(min-width: 720px) 600px, 100vw" : "300px"}
-                  className="object-cover"
-                />
-              </figure>
-            ))}
-          </div>
-        </section>
-      )}
+      <PhotoGallery photos={photos} alt={trip.name} />
 
       <section className="page-container flex flex-col gap-5 py-10">
         <SectionHeader kicker="The trip" title={`${trip.durationDays} days in ${shortName(trip.name)}, all planned`} />
@@ -184,62 +138,11 @@ async function TripView({ data }: { data: TripPageData }) {
         </section>
       )}
 
-      {ends.from && (
-        <section className="page-container flex flex-col gap-6 py-10">
-          <SectionHeader kicker="Meeting point & end point" title="Where we meet" />
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="ticket-surface flex flex-col gap-2 px-5 py-[18px]">
-              <span className="type-stub text-muted">Start · Day 1{ends.pickupTime && ` · pickup ${ends.pickupTime}`}</span>
-              <h3 className="m-0 type-h3">{ends.from}</h3>
-            </div>
-            {ends.dropLocation && (
-              <div className="ticket-surface flex flex-col gap-2 px-5 py-[18px]">
-                <span className="type-stub text-muted">
-                  End · Day {trip.durationDays}
-                  {ends.dropTime && ` · drop ${ends.dropTime}`}
-                </span>
-                <h3 className="m-0 type-h3">{ends.dropLocation}</h3>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
+      <MeetingPoint ends={ends} lastDay={trip.durationDays} />
 
-      <section className="page-container flex flex-col gap-6 py-10">
-        <SectionHeader kicker="From the group" title="Reviews" />
-        {reviews.data.length > 0 ? (
-          <ul className="m-0 grid list-none gap-6 p-0 md:grid-cols-2">
-            {reviews.data.map((r) => (
-              <ReviewCard key={r.id} review={r} />
-            ))}
-          </ul>
-        ) : (
-          <EmptyState
-            icon={<MessageSquareText size={24} aria-hidden />}
-            title="No reviews yet"
-            action={first ? <TextLink href="#departures">See departures</TextLink> : undefined}
-          >
-            {first
-              ? `This trip’s next group leaves ${first.start}. Reviews open when they’re back, and only travellers can write one.`
-              : "Reviews open after the first group is back, and only travellers can write one."}
-          </EmptyState>
-        )}
-      </section>
+      <Reviews reviews={reviews.data} next={first} />
 
-      {similar.length > 0 && (
-        <section className="page-container flex flex-col gap-6 py-10">
-          <SectionHeader
-            kicker={`More from ${destination?.name ?? "India"}`}
-            title="You might also like"
-            action={<TextLink href="/trips">All trips →</TextLink>}
-          />
-          <div className="grid gap-6 md:grid-cols-3">
-            {similar.map((t) => (
-              <TourCard key={t.href} tour={t} />
-            ))}
-          </div>
-        </section>
-      )}
+      <SimilarTrips trips={similar} destinationName={destination?.name} />
 
       {first && (
         <StickyActionBar
@@ -249,6 +152,140 @@ async function TripView({ data }: { data: TripPageData }) {
         />
       )}
     </main>
+  );
+}
+
+function TripHeader({
+  data: { trip, ends, place },
+  crumbs,
+  capacity,
+}: {
+  data: TripPageData;
+  crumbs: { name: string; path: string }[];
+  capacity: number;
+}) {
+  const destination = place?.destination;
+  return (
+    <section className="page-container flex flex-col gap-4 pt-8 pb-6">
+      <Breadcrumb items={crumbs.map((c, i) => ({ label: c.name, href: i < crumbs.length - 1 ? c.path : undefined }))} />
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="type-label text-red">
+          {[ends.from && ends.to ? `${ends.from} → ${ends.to}` : null, destination?.name].filter(Boolean).join(" · ")}
+        </span>
+        {trip.isRecommended && <Badge tone="pick">Ghumbo pick</Badge>}
+      </div>
+      <h1 className="m-0 max-w-[20ch] type-h1">{trip.name}</h1>
+      <ul className="m-0 flex list-none flex-wrap gap-x-6 gap-y-2 p-0 type-label text-ink">
+        <li className="flex items-center gap-2">
+          <CalendarDays size={16} aria-hidden /> {trip.durationDays} days, {trip.durationNights} nights
+        </li>
+        {ends.from && (
+          <li className="flex items-center gap-2">
+            <MapPin size={16} aria-hidden /> From {ends.from}
+          </li>
+        )}
+        <li className="flex items-center gap-2">
+          <UsersRound size={16} aria-hidden /> Group of up to {capacity}
+        </li>
+      </ul>
+    </section>
+  );
+}
+
+function PhotoGallery({ photos, alt }: { photos: TripPageData["trip"]["assets"]; alt: string }) {
+  if (photos.length === 0) return null;
+  return (
+    <section className="page-container pb-10">
+      <div className="grid gap-3 md:h-[440px] md:grid-cols-4 md:grid-rows-2">
+        {photos.slice(0, 5).map((p, i) => (
+          <figure
+            key={p.url}
+            className={
+              i === 0
+                ? "relative m-0 h-[260px] overflow-hidden rounded-ticket border-[1.5px] border-line md:col-span-2 md:row-span-2 md:h-auto"
+                : "relative m-0 hidden overflow-hidden rounded-ticket border-[1.5px] border-line md:block"
+            }
+          >
+            <Image
+              src={p.url}
+              alt={p.label ?? alt}
+              title={p.description ?? undefined}
+              fill
+              priority={i === 0}
+              sizes={i === 0 ? "(min-width: 720px) 600px, 100vw" : "300px"}
+              className="object-cover"
+            />
+          </figure>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function MeetingPoint({ ends, lastDay }: { ends: TripPageData["ends"]; lastDay: number }) {
+  if (!ends.from) return null;
+  return (
+    <section className="page-container flex flex-col gap-6 py-10">
+      <SectionHeader kicker="Meeting point & end point" title="Where we meet" />
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="ticket-surface flex flex-col gap-2 px-5 py-[18px]">
+          <span className="type-stub text-muted">Start · Day 1{ends.pickupTime && ` · pickup ${ends.pickupTime}`}</span>
+          <h3 className="m-0 type-h3">{ends.from}</h3>
+        </div>
+        {ends.dropLocation && (
+          <div className="ticket-surface flex flex-col gap-2 px-5 py-[18px]">
+            <span className="type-stub text-muted">
+              End · Day {lastDay}
+              {ends.dropTime && ` · drop ${ends.dropTime}`}
+            </span>
+            <h3 className="m-0 type-h3">{ends.dropLocation}</h3>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function Reviews({ reviews, next }: { reviews: TripReview[]; next: Departure | undefined }) {
+  return (
+    <section className="page-container flex flex-col gap-6 py-10">
+      <SectionHeader kicker="From the group" title="Reviews" />
+      {reviews.length > 0 ? (
+        <ul className="m-0 grid list-none gap-6 p-0 md:grid-cols-2">
+          {reviews.map((r) => (
+            <ReviewCard key={r.id} review={r} />
+          ))}
+        </ul>
+      ) : (
+        <EmptyState
+          icon={<MessageSquareText size={24} aria-hidden />}
+          title="No reviews yet"
+          action={next ? <TextLink href="#departures">See departures</TextLink> : undefined}
+        >
+          {next
+            ? `This trip’s next group leaves ${next.start}. Reviews open when they’re back, and only travellers can write one.`
+            : "Reviews open after the first group is back, and only travellers can write one."}
+        </EmptyState>
+      )}
+    </section>
+  );
+}
+
+function SimilarTrips({ trips, destinationName }: { trips: TourSummary[]; destinationName?: string }) {
+  if (trips.length === 0) return null;
+  return (
+    <section className="page-container flex flex-col gap-6 py-10">
+      <SectionHeader
+        kicker={`More from ${destinationName ?? "India"}`}
+        title="You might also like"
+        action={<TextLink href="/trips">All trips →</TextLink>}
+      />
+      <div className="grid gap-6 md:grid-cols-3">
+        {trips.map((t) => (
+          <TourCard key={t.href} tour={t} />
+        ))}
+      </div>
+    </section>
   );
 }
 

@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
+import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
 import { StatusBadge } from "@/components/ui/badge";
 import { Kicker } from "@/components/ui/section-header";
 import { TearLine } from "@/components/ui/tear-line";
@@ -28,13 +28,9 @@ export function SentRequestView({
   departures: Departure[];
   children: ReactNode;
 }) {
-  const router = useRouter();
   const sent = useSentRequest(tripSlug);
 
-  useEffect(() => {
-    if (sent === null) router.replace(`/trips/${tripSlug}`);
-  }, [sent, tripSlug, router]);
-
+  if (sent === null) redirect(`/trips/${tripSlug}`);
   if (!sent) return <div className="min-h-[60vh]" aria-busy="true" />;
 
   const dep = departures.find((d) => d.id === sent.departureId);

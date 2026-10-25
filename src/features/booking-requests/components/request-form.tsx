@@ -18,6 +18,7 @@ import { useSession } from "@/features/auth/session";
 import type { Departure } from "@/features/tours/types";
 import { ApiError } from "@/lib/api";
 import { formatINR } from "@/lib/format";
+import { useToday } from "@/lib/use-today";
 import { createBookingRequest } from "../api";
 import { saveSentRequest } from "../sent";
 import type { RequestFormErrors } from "../types";
@@ -73,7 +74,7 @@ export function RequestForm({
   const [travelers, setTravelers] = useState(2);
   const dep = departures.find((d) => d.id === departureId);
   const maxTravelers = Math.min(MAX_TRAVELERS, dep?.seatsLeft ?? MAX_TRAVELERS);
-  const estimate = dep ? dep.price * Math.min(travelers, maxTravelers) : null;
+  const travelerCount = Math.min(travelers, maxTravelers);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -112,17 +113,7 @@ export function RequestForm({
   return (
     <form onSubmit={onSubmit} noValidate className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_400px]">
       <div className="flex flex-col gap-10">
-        {session.status === "signed-out" && (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-ticket border-[1.5px] border-dashed border-tear px-4 py-3">
-            <span className="type-small text-muted">Have an account?</span>
-            <Link
-              href={`/sign-in?next=${encodeURIComponent(`/trips/${tripSlug}/request`)}`}
-              className="font-mono text-[13px] font-semibold uppercase tracking-[0.06em] text-link underline underline-offset-4"
-            >
-              Sign in to track this request
-            </Link>
-          </div>
-        )}
+        {session.status === "signed-out" && <SignInPrompt tripSlug={tripSlug} />}
 
         {/* Remounts once the session loads, so a signed-in traveller's details prefill. */}
         <Step key={user?.id ?? "guest"} n={1} title="Your details">
@@ -150,10 +141,10 @@ export function RequestForm({
         </Step>
 
         <Step n={2} title="Who’s coming">
-          <input type="hidden" name="travelers" value={Math.min(travelers, maxTravelers)} />
+          <input type="hidden" name="travelers" value={travelerCount} />
           <Stepper
             label="Travellers"
-            value={Math.min(travelers, maxTravelers)}
+            value={travelerCount}
             onValueChange={setTravelers}
             min={1}
             max={maxTravelers}
@@ -166,40 +157,7 @@ export function RequestForm({
           )}
         </Step>
 
-        <Step n={3} title="Departure">
-          <input type="hidden" name="departure" value={departureId} />
-          <RadioCardGroup value={departureId} onValueChange={setDepartureId} aria-label="Departure">
-            {departures.map((d) => (
-              <RadioCard key={d.id} value={d.id} disabled={d.seatsLeft <= 0}>
-                <span className="flex flex-wrap items-center justify-between gap-3">
-                  <span className="flex flex-col gap-1.5">
-                    <span className="font-mono text-[16px] font-semibold leading-none">{d.start}</span>
-                    <span className="font-mono text-[12px] leading-none text-muted">→ {d.end}</span>
-                  </span>
-                  <span className="flex items-center gap-3">
-                    <SeatBadge left={d.seatsLeft} />
-                    {d.peak && <Badge tone="peak">Peak</Badge>}
-                    <span className="text-[20px] font-extrabold leading-none [font-stretch:115%]">{formatINR(d.price)}</span>
-                  </span>
-                </span>
-              </RadioCard>
-            ))}
-            <RadioCard value={FLEXIBLE}>
-              <span className="font-mono text-[14px] font-semibold uppercase leading-none tracking-[0.04em]">I’m flexible</span>
-              <span className="type-small text-muted">Tell us a preferred date and we’ll match you to the closest departure.</span>
-            </RadioCard>
-          </RadioCardGroup>
-          {e.departure && (
-            <p role="alert" className="m-0 type-small text-red">
-              {e.departure}
-            </p>
-          )}
-          {departureId === FLEXIBLE && (
-            <Field label="Preferred travel date" hint="We suggest the closest departure on the call." error={e.travelDate}>
-              <Input name="travelDate" type="date" min={new Date().toISOString().slice(0, 10)} />
-            </Field>
-          )}
-        </Step>
+        <DepartureStep departures={departures} value={departureId} onValueChange={setDepartureId} errors={e} />
 
         <Step n={4} title="Anything else?">
           <Field label="Message" optional>
@@ -229,29 +187,7 @@ export function RequestForm({
         </div>
       </div>
 
-      <aside aria-label="Your request" className="ticket-surface flex flex-col lg:sticky lg:top-6">
-        {image && (
-          <span className="relative block h-[180px] overflow-hidden rounded-t-[4.5px]">
-            <Image src={image.src} alt={image.alt} fill sizes="400px" className="object-cover" />
-          </span>
-        )}
-        <div className="flex flex-col gap-1.5 px-5 pt-4 pb-4">
-          <span className="type-stub text-muted">Your request</span>
-          <h2 className="m-0 type-h3">{tripName}</h2>
-          <span className="type-stub text-muted">{route}</span>
-        </div>
-        <TearLine />
-        <dl className="m-0 flex flex-col gap-2.5 px-5 py-4">
-          <SummaryRow label="Dates" value={dep ? `${dep.start} → ${dep.end}` : "Flexible"} />
-          {dep && <SummaryRow label="Per person" value={formatINR(dep.price)} />}
-          {dep && <SummaryRow label="Seats" value={<SeatBadge left={dep.seatsLeft} />} />}
-          <SummaryRow label="Travellers" value={travellersLine(Math.min(travelers, maxTravelers))} />
-          <SummaryRow label="Estimate" value={estimate !== null ? `≈ ${formatINR(estimate)}` : "On the call"} strong />
-        </dl>
-        <p className="m-0 border-t-[1.5px] border-rule px-5 py-3 font-mono text-[11px] font-medium leading-[1.4] tracking-[0.04em] text-muted">
-          PER PERSON, TWIN SHARING · GST INCLUDED · FINAL AMOUNT CONFIRMED ON THE CALL
-        </p>
-      </aside>
+      <RequestSummary image={image} tripName={tripName} route={route} departure={dep} travelers={travelerCount} />
     </form>
   );
 }
@@ -262,5 +198,110 @@ function SummaryRow({ label, value, strong }: { label: string; value: ReactNode;
       <dt className="text-[15px] leading-[1.3] text-muted">{label}</dt>
       <dd className={strong ? "m-0 text-[20px] font-extrabold leading-none [font-stretch:115%]" : "m-0 font-mono text-[14px] font-semibold"}>{value}</dd>
     </div>
+  );
+}
+
+function SignInPrompt({ tripSlug }: { tripSlug: string }) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-ticket border-[1.5px] border-dashed border-tear px-4 py-3">
+      <span className="type-small text-muted">Have an account?</span>
+      <Link
+        href={`/sign-in?next=${encodeURIComponent(`/trips/${tripSlug}/request`)}`}
+        className="font-mono text-[13px] font-semibold uppercase tracking-[0.06em] text-link underline underline-offset-4"
+      >
+        Sign in to track this request
+      </Link>
+    </div>
+  );
+}
+
+function DepartureStep({
+  departures,
+  value,
+  onValueChange,
+  errors,
+}: {
+  departures: Departure[];
+  value: string;
+  onValueChange: (id: string) => void;
+  errors: RequestFormErrors;
+}) {
+  const today = useToday();
+  return (
+    <Step n={3} title="Departure">
+      <input type="hidden" name="departure" value={value} />
+      <RadioCardGroup value={value} onValueChange={onValueChange} aria-label="Departure">
+        {departures.map((d) => (
+          <RadioCard key={d.id} value={d.id} disabled={d.seatsLeft <= 0}>
+            <span className="flex flex-wrap items-center justify-between gap-3">
+              <span className="flex flex-col gap-1.5">
+                <span className="font-mono text-[16px] font-semibold leading-none">{d.start}</span>
+                <span className="font-mono text-[12px] leading-none text-muted">→ {d.end}</span>
+              </span>
+              <span className="flex items-center gap-3">
+                <SeatBadge left={d.seatsLeft} />
+                {d.peak && <Badge tone="peak">Peak</Badge>}
+                <span className="text-[20px] font-extrabold leading-none [font-stretch:115%]">{formatINR(d.price)}</span>
+              </span>
+            </span>
+          </RadioCard>
+        ))}
+        <RadioCard value={FLEXIBLE}>
+          <span className="font-mono text-[14px] font-semibold uppercase leading-none tracking-[0.04em]">I’m flexible</span>
+          <span className="type-small text-muted">Tell us a preferred date and we’ll match you to the closest departure.</span>
+        </RadioCard>
+      </RadioCardGroup>
+      {errors.departure && (
+        <p role="alert" className="m-0 type-small text-red">
+          {errors.departure}
+        </p>
+      )}
+      {value === FLEXIBLE && (
+        <Field label="Preferred travel date" hint="We suggest the closest departure on the call." error={errors.travelDate}>
+          <Input name="travelDate" type="date" min={today} />
+        </Field>
+      )}
+    </Step>
+  );
+}
+
+/** The live ticket beside the form. */
+function RequestSummary({
+  image,
+  tripName,
+  route,
+  departure,
+  travelers,
+}: {
+  image: { src: string; alt: string } | null;
+  tripName: string;
+  route: string;
+  departure: Departure | undefined;
+  travelers: number;
+}) {
+  return (
+    <aside aria-label="Your request" className="ticket-surface flex flex-col lg:sticky lg:top-6">
+      {image && (
+        <span className="relative block h-[180px] overflow-hidden rounded-t-[4.5px]">
+          <Image src={image.src} alt={image.alt} fill sizes="400px" className="object-cover" />
+        </span>
+      )}
+      <div className="flex flex-col gap-1.5 px-5 pt-4 pb-4">
+        <span className="type-stub text-muted">Your request</span>
+        <h2 className="m-0 type-h3">{tripName}</h2>
+        <span className="type-stub text-muted">{route}</span>
+      </div>
+      <TearLine />
+      <dl className="m-0 flex flex-col gap-2.5 px-5 py-4">
+        <SummaryRow label="Dates" value={departure ? `${departure.start} → ${departure.end}` : "Flexible"} />
+        {departure && <SummaryRow label="Per person" value={formatINR(departure.price)} />}
+        {departure && <SummaryRow label="Seats" value={<SeatBadge left={departure.seatsLeft} />} />}
+        <SummaryRow label="Travellers" value={travellersLine(travelers)} />
+        <SummaryRow label="Estimate" value={departure ? `≈ ${formatINR(departure.price * travelers)}` : "On the call"} strong />
+      </dl>
+      <p className="m-0 border-t-[1.5px] border-rule px-5 py-3 font-mono text-[11px] font-medium leading-[1.4] tracking-[0.04em] text-muted">
+        PER PERSON, TWIN SHARING · GST INCLUDED · FINAL AMOUNT CONFIRMED ON THE CALL
+      </p>
+    </aside>
   );
 }

@@ -1,12 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState, type FormEvent } from "react";
+import { redirect, useRouter } from "next/navigation";
+import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { ApiError } from "@/lib/api";
 import { GOOGLE_SIGN_IN_URL, signIn, signUp } from "../api";
+import { safeNext } from "../lib";
 import { setChallenge, setNextAfterGoogle, useSession } from "../session";
 import { GoogleMark } from "./google-mark";
 
@@ -40,9 +41,7 @@ export function SignInForm({ next, error }: { next: string; error?: string }) {
   const [errors, setErrors] = useState<Errors>(() => ({ form: error ? GOOGLE_ERRORS[error] : undefined }));
   const [pending, setPending] = useState(false);
 
-  useEffect(() => {
-    if (session.status === "signed-in") router.replace(next);
-  }, [session.status, next, router]);
+  if (session.status === "signed-in") redirect(safeNext(next));
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

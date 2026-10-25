@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
@@ -28,9 +28,7 @@ export function VerifyForm() {
   const [resending, setResending] = useState(false);
   const wait = useSecondsUntil(challenge?.resendAt ?? 0);
 
-  useEffect(() => {
-    if (stored === null) router.replace("/sign-in");
-  }, [stored, router]);
+  if (stored === null) redirect("/sign-in");
 
   async function onVerify(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

@@ -14,6 +14,8 @@ export function GoogleCallback() {
     if (started.current) return;
     started.current = true;
     const next = takeNextAfterGoogle();
+    // Waits on loadUser(): there's no event to hang it on, and no server-side session to redirect() from.
+    // react-doctor-disable-next-line react-doctor/nextjs-no-client-side-redirect
     loadUser().then(() => router.replace(next));
   }, [router]);
 

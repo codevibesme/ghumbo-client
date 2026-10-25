@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Kicker } from "@/components/ui/section-header";
 import { VerifyForm } from "@/features/auth/components/verify-form";
 
@@ -14,7 +15,10 @@ export default function VerifyPage() {
         <Kicker>Check your email</Kicker>
         <h1 className="m-0 type-h1">Enter your code.</h1>
       </header>
-      <VerifyForm />
+      {/* The resend countdown reads the clock, so the form renders per visit, not at build time. */}
+      <Suspense fallback={<div className="min-h-[280px]" aria-busy="true" />}>
+        <VerifyForm />
+      </Suspense>
     </>
   );
 }

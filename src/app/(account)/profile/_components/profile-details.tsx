@@ -1,19 +1,14 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { redirect } from "next/navigation";
 import { SignOutButton } from "@/features/auth/components/sign-out-button";
 import { useSession } from "@/features/auth/session";
 
 /** Signed-in only: sends signed-out visitors to /sign-in and back. */
 export function ProfileDetails() {
-  const router = useRouter();
   const { status, user } = useSession();
 
-  useEffect(() => {
-    if (status === "signed-out") router.replace("/sign-in?next=/profile");
-  }, [status, router]);
-
+  if (status === "signed-out") redirect("/sign-in?next=/profile");
   if (!user) return <div className="min-h-24" aria-busy="true" />;
 
   return (
