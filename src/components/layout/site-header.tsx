@@ -1,12 +1,14 @@
 "use client";
 
-import { Menu, X } from "lucide-react";
+import { Menu, UserRound, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Dialog } from "radix-ui";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { type NavKey, mainNav } from "@/config/site";
+import { initials, photoUrl, useSession } from "@/features/auth/session";
 import { ThemeToggle } from "@/features/theme/theme-toggle";
 import { cn } from "@/lib/cn";
 import { Logo } from "./logo";
@@ -18,11 +20,14 @@ import { Logo } from "./logo";
  * Auth screens (sign in / OTP) use `minimal`: logo only, no nav.
  */
 
+type HeaderUser = { name: string; initials?: string; photo?: string | null };
+
 type SiteHeaderProps = {
   /** Highlighted nav item; derived from the URL when omitted. */
   current?: NavKey;
-  /** Signed-in traveller; shows "My trips" + initials avatar instead of Sign in. */
-  user?: { name: string; initials: string };
+  /** Signed-in traveller; shows "My trips" + avatar (photo, else initials) instead of Sign in.
+   *  Read from the session when omitted; pass it to force a state (design system). */
+  user?: HeaderUser;
   minimal?: boolean;
 };
 
@@ -35,9 +40,33 @@ const navLink =
   "py-4 font-mono text-[13px] font-medium uppercase leading-none tracking-[0.06em] text-ink no-underline hover:text-red";
 const currentLink = "shadow-[inset_0_-2px_0_var(--g-red)]";
 
-export function SiteHeader({ current: currentProp, user, minimal }: SiteHeaderProps) {
+/*
+ * usePathname() is request data on dynamic routes ([slug] app shells), so it
+ * lives behind its own Suspense: the shell gets the header without the
+ * active-nav underline and it fills in once the URL is known.
+ */
+export function SiteHeader(props: SiteHeaderProps) {
+  if (props.current || props.minimal) return <HeaderBar {...props} />;
+  return (
+    <Suspense fallback={<HeaderBar {...props} />}>
+      <HeaderForPath {...props} />
+    </Suspense>
+  );
+}
+
+function HeaderForPath(props: SiteHeaderProps) {
   const pathname = usePathname();
-  const current = currentProp ?? navKeyFor(pathname);
+  return <HeaderBar {...props} current={navKeyFor(pathname)} />;
+}
+
+function HeaderBar({ current, user: userOverride, minimal }: SiteHeaderProps) {
+  const session = useSession();
+  const user =
+    userOverride ??
+    (session.user
+      ? { name: session.user.name, initials: initials(session.user), photo: photoUrl(session.user) }
+      : undefined);
+
   return (
     <header className="page-container">
       <div className="flex h-16 items-center gap-2 border-b-2 border-dashed border-tear md:h-20 md:gap-10">
@@ -92,14 +121,18 @@ export function SiteHeader({ current: currentProp, user, minimal }: SiteHeaderPr
   );
 }
 
-function Avatar({ user }: { user: { name: string; initials: string } }) {
+function Avatar({ user }: { user: HeaderUser }) {
   return (
     <Link
       href="/profile"
       aria-label={`Account: ${user.name}`}
-      className="inline-flex size-11 items-center justify-center rounded-full bg-passport font-mono text-[14px] font-semibold leading-none tracking-[0.04em] text-on-passport no-underline"
+      className="relative inline-flex size-11 items-center justify-center overflow-hidden rounded-full bg-passport font-mono text-[14px] font-semibold leading-none tracking-[0.04em] text-on-passport no-underline"
     >
-      {user.initials}
+      {user.photo ? (
+        <Image src={user.photo} alt="" fill sizes="44px" className="object-cover" />
+      ) : (
+        user.initials || <UserRound size={20} aria-hidden />
+      )}
     </Link>
   );
 }

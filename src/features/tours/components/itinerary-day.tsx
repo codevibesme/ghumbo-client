@@ -51,8 +51,8 @@ export function ItineraryDay({
             </span>
             {(a.addOn || a.payDirect) && (
               <span className="col-start-2 md:col-start-auto md:justify-self-end">
-                {a.addOn && <Badge tone="tint">Add-on · {a.addOn}</Badge>}
-                {a.payDirect && <Badge tone="dashed">Pay direct · {a.payDirect}</Badge>}
+                {a.addOn && <Badge tone="tint">Add-on{a.addOn === true ? "" : ` · ${a.addOn}`}</Badge>}
+                {a.payDirect && <Badge tone="dashed">Pay direct{a.payDirect === true ? "" : ` · ${a.payDirect}`}</Badge>}
               </span>
             )}
           </li>

@@ -12,9 +12,9 @@ export const footerColumns = [
   {
     title: "Trips",
     links: [
-      { label: "Darjeeling", href: "/trips/darjeeling" },
-      { label: "Sundarbans", href: "/trips/sundarbans" },
-      { label: "Kolkata", href: "/trips/kolkata" },
+      { label: "Darjeeling", href: "/trips/darjeeling-queen-of-the-hills-budget" },
+      { label: "Sundarbans", href: "/trips/sundarbans-mangrove-tiger-safari-budget" },
+      { label: "Kolkata", href: "/trips/kolkata-city-of-joy-heritage-budget" },
       { label: "All trips", href: "/trips" },
     ],
   },
@@ -41,10 +41,10 @@ export
 const footerCompactLinks = [
   { label: "All trips", href: "/trips" },
   { label: "How it works", href: "/how-it-works" },
-  { label: "Darjeeling", href: "/trips/darjeeling" },
+  { label: "Darjeeling", href: "/trips/darjeeling-queen-of-the-hills-budget" },
   { label: "FAQ", href: "/how-it-works#faq" },
-  { label: "Sundarbans", href: "/trips/sundarbans" },
+  { label: "Sundarbans", href: "/trips/sundarbans-mangrove-tiger-safari-budget" },
   { label: "Contact", href: "/contact" },
-  { label: "Kolkata", href: "/trips/kolkata" },
+  { label: "Kolkata", href: "/trips/kolkata-city-of-joy-heritage-budget" },
   { label: "support@ghumbo.com", href: "mailto:support@ghumbo.com" },
 ];
