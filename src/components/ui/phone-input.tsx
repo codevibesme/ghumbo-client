@@ -13,6 +13,7 @@ export function PhoneInput({ id, className, ...props }: Omit<ComponentProps<"inp
         "flex h-[52px] overflow-hidden rounded-ticket border-[1.5px] border-line bg-card",
         "has-[input:focus-visible]:outline-3 has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-(--g-focus)",
         "has-aria-invalid:border-2 has-aria-invalid:border-red",
+        "has-[input:disabled]:bg-sunk",
         className,
       )}
     >
@@ -24,7 +25,7 @@ export function PhoneInput({ id, className, ...props }: Omit<ComponentProps<"inp
         type="tel"
         inputMode="numeric"
         autoComplete="tel-national"
-        className="min-w-0 flex-1 border-0 bg-transparent px-4 font-sans text-[16px] leading-[1.2] text-ink outline-none placeholder:text-placeholder"
+        className="min-w-0 flex-1 border-0 bg-transparent px-4 font-sans text-[16px] leading-[1.2] text-ink outline-none placeholder:text-placeholder disabled:cursor-not-allowed disabled:text-muted"
         {...props}
       />
     </span>

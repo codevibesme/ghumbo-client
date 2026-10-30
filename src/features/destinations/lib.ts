@@ -32,3 +32,13 @@ export function dayRange(stats: { minDays: number | null; maxDays: number | null
   if (stats.minDays === null || stats.maxDays === null) return null;
   return stats.minDays === stats.maxDays ? `${stats.minDays} days` : `${stats.minDays}–${stats.maxDays} days`;
 }
+
+/**
+ * Short intro for a place hero: the first paragraph, cut to its first
+ * `sentences` sentences. The full overview stays in JSON-LD and meta.
+ */
+export function summary(text: string, sentences = 2) {
+  const para = text.split(/\n\s*\n/)[0].trim();
+  const parts = para.match(/[^.!?]+[.!?]+(?=\s|$)/g);
+  return parts ? parts.slice(0, sentences).join("").trim() : para;
+}

@@ -26,8 +26,6 @@ export type Departure = {
   /** "TUE 29 DEC 2026" */
   end: string;
   price: number;
-  /** Child (5–11) price, shown on the group pass. */
-  childPrice?: number;
   seatsLeft: number;
   totalSeats: number;
   peak?: boolean;
@@ -62,7 +60,10 @@ export type Activity = {
 
 export type TripTier = "budget" | "standard" | "premium";
 
-/** GET /trips/destination/:slug list item. */
+/** A trip's tag; the labels are the "vibes" (Hills, Heritage…) that /trips filters on. */
+export type TripTag = { label: string; description: string | null };
+
+/** GET /trips list item. */
 export type TripListItem = {
   id: string;
   name: string;
@@ -70,8 +71,10 @@ export type TripListItem = {
   tier: TripTier;
   durationDays: number;
   durationNights: number;
+  isRecommended: boolean;
+  tags: TripTag[];
   destination: { id: number; name: string; slug: string } | null;
-  nextDeparture: { id: string; startDate: string; endDate: string; seatsLeft: number } | null;
+  nextDeparture: { id: string; startDate: string; endDate: string; seatsLeft: number; isPeak: boolean } | null;
   asset: Asset | null;
   startingPrice: { amount: number; currency: string } | null;
   rating: number | null;
@@ -110,7 +113,7 @@ export type Trip = {
   audience: "open" | "couples";
   durationDays: number;
   durationNights: number;
-  tags: { label: string; description: string | null }[];
+  tags: TripTag[];
   itinerary: { days: ItineraryDayData[] };
   inclusions: { title: string; description: string }[];
   exclusions: { title: string; description: string }[];
@@ -118,16 +121,18 @@ export type Trip = {
   isRecommended: boolean;
 };
 
-/** GET /departures/trip/:tripId item. Prices are numeric strings ("7799.00"). */
+/** GET /departures/trip/:tripId item. One per-person price; `amount` is a numeric string ("7799.00"). */
 export type TripDeparture = {
   id: string;
   tripId: string;
   status: "draft" | "open" | "cancelled" | "completed";
+  isPeak: boolean;
   startDate: string;
   endDate: string;
   capacity: number;
   bookedSeats: number;
-  prices: { type: "adult" | "child"; currency: string; amount: string }[];
+  currency: string;
+  amount: string;
 };
 
 /** GET /reviews/trip/:tripId item. */

@@ -28,7 +28,7 @@ export function TicketsSections() {
               name="West Bengal"
               blurb="Tea towns, tigers, terracotta and trams. 9 trips from ₹5,299."
               tripCount={9}
-              image={{ src: "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/03/Toy_Train_Darjeeling_West_Bengal_India.jpg/1920px-Toy_Train_Darjeeling_West_Bengal_India.jpg", alt: "Darjeeling toy train" }}
+              image={{ src: "https://cdn.ghumbo.com/catalog/trips/darjeeling-queen-of-the-hills-budget/03-darjeeling-himalayan-railway-toy-train.jpg", alt: "Darjeeling toy train" }}
             />
             <ComingSoonCard
               name="Sikkim"

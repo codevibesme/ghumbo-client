@@ -80,3 +80,23 @@ export function ItineraryDay({
     </article>
   );
 }
+
+/** Explains the two activity tags above the day cards; shows only the tags this itinerary uses. */
+export function TagLegend({ addOn, payDirect, className }: { addOn?: boolean; payDirect?: boolean; className?: string }) {
+  if (!addOn && !payDirect) return null;
+  const item = "inline-flex items-center gap-2 text-[14px] leading-[1.45] text-muted";
+  return (
+    <ul className={cn("m-0 flex list-none flex-wrap items-center gap-x-5 gap-y-2 p-0", className)}>
+      {addOn && (
+        <li className={item}>
+          <Badge tone="tint">Add-on</Badge> Optional, we can arrange it
+        </li>
+      )}
+      {payDirect && (
+        <li className={item}>
+          <Badge tone="dashed">Pay direct</Badge> Paid at the venue
+        </li>
+      )}
+    </ul>
+  );
+}

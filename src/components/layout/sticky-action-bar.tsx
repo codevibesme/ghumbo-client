@@ -5,11 +5,14 @@ import { cn } from "@/lib/cn";
 /**
  * Mobile sticky action bar on tour + request pages: 80px, card ground, 1.5px
  * ink top rule, meta + price on the left, full-width primary L on the right.
+ * Pass `href` for a link, or `form` to submit that form (the request page).
  */
 export function StickyActionBar({
   meta,
   price,
   href,
+  form,
+  disabled,
   label = "Request my seat →",
   className,
 }: {
@@ -17,10 +20,10 @@ export function StickyActionBar({
   meta: string;
   /** "₹9,499" */
   price: string;
-  href: string;
   label?: string;
   className?: string;
-}) {
+} & ({ href: string; form?: never; disabled?: never } | { form: string; href?: never; disabled?: boolean })) {
+  const button = buttonClasses({ className: "flex-1 px-3" });
   return (
     <div
       className={cn(
@@ -32,9 +35,15 @@ export function StickyActionBar({
         <span className="font-mono text-[11px] font-medium leading-none tracking-[0.08em] text-muted">{meta}</span>
         <span className="text-[22px] font-extrabold leading-none [font-stretch:115%]">{price}</span>
       </span>
-      <Link href={href} className={buttonClasses({ className: "flex-1 px-3" })}>
-        {label}
-      </Link>
+      {href !== undefined ? (
+        <Link href={href} className={button}>
+          {label}
+        </Link>
+      ) : (
+        <button type="submit" form={form} disabled={disabled} className={button}>
+          {label}
+        </button>
+      )}
     </div>
   );
 }

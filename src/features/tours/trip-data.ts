@@ -20,7 +20,4 @@ export async function getTripPageData(slug: string) {
 
 export type TripPageData = NonNullable<Awaited<ReturnType<typeof getTripPageData>>>;
 
-/** "Darjeeling: Queen of the Hills" → "Darjeeling", for breadcrumbs and short labels. */
-export function shortName(name: string) {
-  return name.split(/[:,&]/)[0].trim();
-}
+export { shortName } from "./mappers";

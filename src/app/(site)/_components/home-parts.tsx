@@ -6,7 +6,7 @@ import { TearLine } from "@/components/ui/tear-line";
 import { buttonClasses } from "@/components/ui/variants";
 
 /* ------------------------------------------------------------------ */
-/* Hero search · Where / When joined into one bar, GET → /trips         */
+/* Hero search · Where / When / Vibe joined into one bar, GET → /trips  */
 /* ------------------------------------------------------------------ */
 
 function SearchSelect({
@@ -45,9 +45,12 @@ function SearchSelect({
 export function HeroSearch({
   destinations,
   months,
+  vibes,
 }: {
   destinations: { value: string; label: string }[];
   months: { value: string; label: string }[];
+  /** Trip tag labels; the field is left out until trips have tags. */
+  vibes: { value: string; label: string }[];
 }) {
   return (
     <form
@@ -56,7 +59,8 @@ export function HeroSearch({
       className="flex flex-col gap-1 rounded-ticket border-[1.5px] border-line bg-card p-1 md:flex-row md:items-center"
     >
       <SearchSelect label="Where" name="destination" options={[{ value: "", label: "Anywhere" }, ...destinations]} />
-      <SearchSelect label="When" name="month" options={[{ value: "", label: "Any month" }, ...months]} last />
+      <SearchSelect label="When" name="month" options={[{ value: "", label: "Any month" }, ...months]} last={!vibes.length} />
+      {vibes.length > 0 && <SearchSelect label="Vibe" name="vibe" options={[{ value: "", label: "Any vibe" }, ...vibes]} last />}
       <button type="submit" className={buttonClasses({ className: "md:flex-none" })}>
         Find trips →
       </button>

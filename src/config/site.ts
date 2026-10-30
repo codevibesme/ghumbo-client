@@ -7,44 +7,27 @@ export const mainNav: { key: NavKey; label: string; href: string }[] = [
   { key: "how-it-works", label: "How it works", href: "/how-it-works" },
 ];
 
-/** Footer link columns (desktop). */
+export const footerTagline = "Just show up. Fixed-date group trips across India.";
+
+export const supportEmail = "support@ghumbo.com";
+
+const darjeeling = { label: "Darjeeling", href: "/trips/darjeeling-queen-of-the-hills-budget" };
+const westBengal = { label: "West Bengal", href: "/destinations/west-bengal" };
+const andaman = { label: "Andaman Islands", href: "/destinations/andaman-islands" };
+const allTrips = { label: "All trips", href: "/trips" };
+const howItWorks = { label: "How it works", href: "/how-it-works" };
+const faq = { label: "FAQ", href: "/how-it-works#faq" };
+const email = { label: supportEmail, href: `mailto:${supportEmail}` };
+
+/**
+ * Footer link columns (desktop). The design also lists About / Contact /
+ * Terms / Privacy (pages not planned).
+ */
 export const footerColumns = [
-  {
-    title: "Trips",
-    links: [
-      { label: "Darjeeling", href: "/trips/darjeeling-queen-of-the-hills-budget" },
-      { label: "Sundarbans", href: "/trips/sundarbans-mangrove-tiger-safari-budget" },
-      { label: "Kolkata", href: "/trips/kolkata-city-of-joy-heritage-budget" },
-      { label: "All trips", href: "/trips" },
-    ],
-  },
-  {
-    title: "Company",
-    links: [
-      { label: "How it works", href: "/how-it-works" },
-      { label: "About", href: "/about" },
-      { label: "Careers", href: "/careers" },
-    ],
-  },
-  {
-    title: "Help",
-    links: [
-      { label: "FAQ", href: "/how-it-works#faq" },
-      { label: "Contact", href: "/contact" },
-      { label: "support@ghumbo.com", href: "mailto:support@ghumbo.com" },
-    ],
-  },
+  { title: "Trips", links: [westBengal, andaman, darjeeling, allTrips] },
+  { title: "Company", links: [howItWorks] },
+  { title: "Help", links: [faq, email] },
 ];
 
 /** Compact footer order on phones (two columns, read across). */
-export
-const footerCompactLinks = [
-  { label: "All trips", href: "/trips" },
-  { label: "How it works", href: "/how-it-works" },
-  { label: "Darjeeling", href: "/trips/darjeeling-queen-of-the-hills-budget" },
-  { label: "FAQ", href: "/how-it-works#faq" },
-  { label: "Sundarbans", href: "/trips/sundarbans-mangrove-tiger-safari-budget" },
-  { label: "Contact", href: "/contact" },
-  { label: "Kolkata", href: "/trips/kolkata-city-of-joy-heritage-budget" },
-  { label: "support@ghumbo.com", href: "mailto:support@ghumbo.com" },
-];
+export const footerCompactLinks = [allTrips, howItWorks, westBengal, faq, darjeeling, email];

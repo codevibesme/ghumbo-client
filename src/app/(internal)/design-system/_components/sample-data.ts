@@ -9,7 +9,7 @@ export const tours = {
     title: "Darjeeling: Queen of the Hills",
     route: "NJP → Darjeeling · 4D / 3N",
     blurb: "Tiger Hill sunrise, Ghum Monastery, tea gardens and three nights in a family homestay.",
-    image: { src: "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/97/View_of_the_Himalayas_and_the_Kanchenjunga%2C_from_Tiger_Hill%2C_Darjeeling.jpg/1920px-View_of_the_Himalayas_and_the_Kanchenjunga%2C_from_Tiger_Hill%2C_Darjeeling.jpg", alt: "Kanchenjunga from Tiger Hill" },
+    image: { src: "https://cdn.ghumbo.com/catalog/trips/darjeeling-queen-of-the-hills-budget/01-kanchenjunga-from-tiger-hill.jpg", alt: "Kanchenjunga from Tiger Hill" },
     nextDeparture: "FRI 13 NOV",
     seatsLeft: 14,
     price: 7799,
@@ -20,7 +20,7 @@ export const tours = {
     title: "Kolkata: City of Joy Heritage Trail",
     route: "Kolkata · 3D / 2N",
     blurb: "Flower market at dawn, Kumartuli clay workshops, trams and a long food walk.",
-    image: { src: "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/72/Victoria_Memorial_situated_in_Kolkata.jpg/1920px-Victoria_Memorial_situated_in_Kolkata.jpg", alt: "Victoria Memorial, Kolkata" },
+    image: { src: "https://cdn.ghumbo.com/catalog/destinations/west-bengal/02-victoria-memorial-kolkata.jpg", alt: "Victoria Memorial, Kolkata" },
     nextDeparture: "SAT 14 NOV",
     seatsLeft: 3,
     price: 5499,
@@ -30,7 +30,7 @@ export const tours = {
     title: "Kolkata: City of Joy Heritage Trail",
     route: "Kolkata · 3D / 2N",
     blurb: "Flower market at dawn, Kumartuli clay workshops, trams and a long food walk.",
-    image: { src: "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bb/Hooghly_River_and_the_Howrah_Bridge%2C_Kolkata%2C_India.jpg/1920px-Hooghly_River_and_the_Howrah_Bridge%2C_Kolkata%2C_India.jpg", alt: "Howrah Bridge from the ghats" },
+    image: { src: "https://cdn.ghumbo.com/catalog/trips/kolkata-city-of-joy-heritage-budget/02-howrah-bridge-from-the-ghats.jpg", alt: "Howrah Bridge from the ghats" },
     nextDeparture: "SAT 14 NOV",
     seatsLeft: 0,
     price: 5499,
@@ -40,7 +40,7 @@ export const tours = {
     title: "Darjeeling, Kalimpong & Mirik Hill Circuit",
     route: "NJP → Kalimpong · 6D / 5N",
     blurb: "A lakeside night in Mirik, two in Darjeeling, then Kalimpong. One Tempo Traveller, six days.",
-    image: { src: "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8a/Mirik_Sumendu_Lake.jpg/1920px-Mirik_Sumendu_Lake.jpg", alt: "Sumendu Lake, Mirik" },
+    image: { src: "https://cdn.ghumbo.com/catalog/trips/darjeeling-kalimpong-mirik-hill-circuit-budget/01-sumendu-lake-mirik.jpg", alt: "Sumendu Lake, Mirik" },
     nextDeparture: "SAT 07 NOV",
     seatsLeft: 11,
     price: 12999,
@@ -51,7 +51,7 @@ export const tours = {
     title: "Sundarbans: Mangrove & Tiger Safari",
     route: "Kolkata → Godkhali · 3D / 2N",
     blurb: "A full day on the creeks, the Dobanki canopy walk and a folk night.",
-    image: { src: "https://upload.wikimedia.org/wikipedia/commons/2/23/Sundarban_Tiger.jpg", alt: "Royal Bengal tiger in the Sundarbans" },
+    image: { src: "https://cdn.ghumbo.com/catalog/trips/sundarbans-mangrove-tiger-safari-budget/01-royal-bengal-tiger-sundarban-tiger-reserve.jpg", alt: "Royal Bengal tiger in the Sundarbans" },
     nextDeparture: "SAT 14 NOV",
     seatsLeft: 9,
     price: 6599,
@@ -60,10 +60,10 @@ export const tours = {
 } satisfies Record<string, TourSummary>;
 
 export const departures: Departure[] = [
-  { id: "2026-11-13", start: "FRI 13 NOV", end: "MON 16 NOV 2026", price: 7799, childPrice: 5299, seatsLeft: 14, totalSeats: 18, departTime: "11:00", returnTime: "13:30" },
-  { id: "2026-12-26", start: "SAT 26 DEC", end: "TUE 29 DEC 2026", price: 9499, childPrice: 6199, seatsLeft: 4, totalSeats: 18, peak: true, departTime: "11:00", returnTime: "13:30" },
-  { id: "2027-03-19", start: "FRI 19 MAR", end: "MON 22 MAR 2027", price: 7799, childPrice: 5299, seatsLeft: 18, totalSeats: 18, departTime: "11:00", returnTime: "13:30" },
-  { id: "2027-05-01", start: "SAT 01 MAY", end: "TUE 04 MAY 2027", price: 9499, childPrice: 6199, seatsLeft: 18, totalSeats: 18, peak: true, departTime: "11:00", returnTime: "13:30" },
+  { id: "2026-11-13", start: "FRI 13 NOV", end: "MON 16 NOV 2026", price: 7799, seatsLeft: 14, totalSeats: 18, departTime: "11:00", returnTime: "13:30" },
+  { id: "2026-12-26", start: "SAT 26 DEC", end: "TUE 29 DEC 2026", price: 9499, seatsLeft: 4, totalSeats: 18, peak: true, departTime: "11:00", returnTime: "13:30" },
+  { id: "2027-03-19", start: "FRI 19 MAR", end: "MON 22 MAR 2027", price: 7799, seatsLeft: 18, totalSeats: 18, departTime: "11:00", returnTime: "13:30" },
+  { id: "2027-05-01", start: "SAT 01 MAY", end: "TUE 04 MAY 2027", price: 9499, seatsLeft: 18, totalSeats: 18, peak: true, departTime: "11:00", returnTime: "13:30" },
 ];
 
 export const boardRows: BoardRow[] = [

@@ -3,7 +3,7 @@ import { cn } from "@/lib/cn";
 /** Stops joined by a dotted passport route; the destination dot is stamp red. */
 export function RouteLine({ stops, className }: { stops: string[]; className?: string }) {
   return (
-    <div role="img" aria-label={`Route: ${stops.join(", ")}`} className={cn("flex items-center text-ink", className)}>
+    <div role="img" aria-label={`Route: ${stops.join(", ")}`} className={cn("flex flex-wrap items-center gap-y-2 text-ink", className)}>
       {stops.map((stop, i) => {
         const last = i === stops.length - 1;
         return (

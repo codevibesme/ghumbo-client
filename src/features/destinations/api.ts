@@ -28,10 +28,7 @@ export async function getCountry(name: string) {
 export async function getDestinations(countryName: string, status: PlaceStatus = "live") {
   "use cache";
   cacheLife("minutes");
-  const page = await getOrNull<Paginated<Destination>>(`/destinations/country/${encodeURIComponent(countryName)}`, {
-    size: ALL,
-    status,
-  });
+  const page = await getOrNull<Paginated<Destination>>("/destinations", { country: countryName, size: ALL, status });
   return page?.data ?? [];
 }
 

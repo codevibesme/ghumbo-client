@@ -92,9 +92,14 @@ export function photoUrl(user: User) {
   return user.photo?.thumbnail_url || user.photo?.url || null;
 }
 
+export function fullName(user: User) {
+  return [user.firstName, user.lastName].map((s) => s.trim()).filter(Boolean).join(" ");
+}
+
 export function initials(user: User) {
-  const parts = user.name.trim().split(/\s+/);
-  return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase();
+  const first = user.firstName.trim();
+  const last = user.lastName.trim();
+  return ((first[0] ?? "") + (last[0] ?? "")).toUpperCase() || "?";
 }
 
 /* ------------------------------------------------------------------ */

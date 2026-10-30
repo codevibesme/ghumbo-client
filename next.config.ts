@@ -7,13 +7,11 @@ const nextConfig: NextConfig = {
   },
   cacheComponents: true,
   images: {
-    // Tour photos: our CDN, plus Wikimedia Commons for the seeded CC-licensed photos.
+    // Catalog photos: our CDN (CC-licensed Commons photos are mirrored there, credits kept in the asset).
     // Profile photos: Google's, saved on sign-up with Google.
     remotePatterns: [
       new URL("https://cdn.ghumbo.com/**"),
       new URL("https://lh3.googleusercontent.com/**"),
-      new URL("https://upload.wikimedia.org/wikipedia/commons/**"),
-      new URL("https://thumb.wikimedia.org/wikipedia/commons/**"),
     ],
   },
   partialPrefetching: true,

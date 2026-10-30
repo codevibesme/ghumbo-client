@@ -19,26 +19,29 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-// B08 Request a seat. ?departure=<id> preselects the date picked on the trip page.
-export default function RequestPage({ params, searchParams }: PageProps<"/trips/[slug]/request">) {
-  return (
-    <main className="page-container flex flex-1 flex-col gap-8 pt-8 pb-16">
-      <Suspense fallback={<div className="min-h-[60vh]" aria-busy="true" />}>
-        <RequestContent params={params} searchParams={searchParams} />
-      </Suspense>
-    </main>
-  );
-}
+// Unknown slugs 404 before anything streams (see the trip page); ?departure= is read under Suspense.
+export const instant = false;
 
-async function RequestContent({ params, searchParams }: Pick<PageProps<"/trips/[slug]/request">, "params" | "searchParams">) {
-  const [{ slug }, { departure }] = await Promise.all([params, searchParams]);
+// B08 Request a seat. ?departure=<id> preselects the date picked on the trip page.
+export default async function RequestPage({ params, searchParams }: PageProps<"/trips/[slug]/request">) {
+  const { slug } = await params;
   const data = await getTripPageData(slug);
   if (!data) notFound();
   const { trip, ends, departures } = data;
   const cover = trip.assets[0];
+  const form = (initialDeparture?: string) => (
+    <RequestForm
+      tripSlug={trip.slug}
+      tripName={trip.name}
+      route={[ends.from, duration(trip.durationDays, trip.durationNights)].filter(Boolean).join(" · ")}
+      image={cover ? { src: cover.url, alt: cover.label ?? trip.name } : null}
+      departures={departures}
+      initialDeparture={initialDeparture}
+    />
+  );
 
   return (
-    <>
+    <main className="page-container flex flex-1 flex-col gap-8 pt-8 pb-16">
       <div className="flex flex-col gap-3">
         <Breadcrumb
           items={[
@@ -53,15 +56,17 @@ async function RequestContent({ params, searchParams }: Pick<PageProps<"/trips/[
           Tell us who’s coming. We call within 24 hours to confirm. Nothing is paid until we’ve talked.
         </p>
       </div>
-      <RequestForm
-        tripId={trip.id}
-        tripSlug={trip.slug}
-        tripName={trip.name}
-        route={[ends.from, duration(trip.durationDays, trip.durationNights)].filter(Boolean).join(" · ")}
-        image={cover ? { src: cover.url, alt: cover.label ?? trip.name } : null}
-        departures={departures}
-        initialDeparture={typeof departure === "string" ? departure : undefined}
-      />
-    </>
+      <Suspense fallback={form()}>
+        <WithDeparture searchParams={searchParams} render={form} />
+      </Suspense>
+    </main>
   );
+}
+
+async function WithDeparture({
+  searchParams,
+  render,
+}: Pick<PageProps<"/trips/[slug]/request">, "searchParams"> & { render: (departure?: string) => React.ReactNode }) {
+  const { departure } = await searchParams;
+  return render(typeof departure === "string" ? departure : undefined);
 }

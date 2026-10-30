@@ -8,10 +8,14 @@ export type AuthChallenge = {
 /** GET /users/me. */
 export type User = {
   id: string;
-  name: string;
+  firstName: string;
+  /** "" when the person gave only one name. */
+  lastName: string;
   email: string | null;
   phone: string | null;
   photo: { url: string; thumbnail_url?: string } | null;
+  /** When the account was made. */
+  createdAt: string;
 };
 
 export type Session =
@@ -24,7 +28,8 @@ export type PendingChallenge = {
   challengeId: string;
   email: string;
   /** Set when signing up; resending replays sign-up instead of sign-in. */
-  name?: string;
+  firstName?: string;
+  lastName?: string;
   /** Where to go after verifying. Always a same-site path. */
   next: string;
   /** Epoch ms. */

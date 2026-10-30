@@ -10,8 +10,8 @@ export function signIn(email: string) {
   return api<AuthChallenge>("POST", "/auth/sign-in", { email });
 }
 
-export function signUp(email: string, name: string) {
-  return api<AuthChallenge>("POST", "/auth/sign-up", { email, name });
+export function signUp(email: string, firstName: string, lastName?: string) {
+  return api<AuthChallenge>("POST", "/auth/sign-up", { email, firstName, lastName: lastName || undefined });
 }
 
 export function verifyOtp(challengeId: string, otp: string) {

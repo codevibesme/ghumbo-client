@@ -5,14 +5,14 @@ import { RoundStamp } from "@/components/ui/stamp";
 import { TextLink } from "@/components/ui/text-link";
 import { getCountries, getDestinations } from "@/features/destinations/api";
 import { DestinationTicket } from "@/features/destinations/components/destination-card";
-import { dayRange, destinationHref, firstSentence, tripStats } from "@/features/destinations/lib";
-import { getAllTrips, getTripsByDestination } from "@/features/tours/api";
+import { countrySlug, dayRange, destinationHref, firstSentence, tripStats } from "@/features/destinations/lib";
+import { getAllTrips } from "@/features/tours/api";
 import { DepartureBoard } from "@/features/tours/components/departure-board";
-import { isListable, monthLabel, toBoardRows } from "@/features/tours/mappers";
+import { isListable, monthLabel, toBoardRows, vibeOptions } from "@/features/tours/mappers";
 import { formatINR, formatTicketDate } from "@/lib/format";
 import { BookingSteps, HeroSearch, WhyGhumbo } from "./_components/home-parts";
 
-// B01 Home. Catalog data is cached, so the whole page prerenders.
+// T01 Home. Catalog data is cached, so the whole page prerenders.
 export default async function Home() {
   "use cache";
   cacheLife("minutes");
@@ -20,19 +20,14 @@ export default async function Home() {
   const [trips, countries] = await Promise.all([getAllTrips(), getCountries()]);
   const listable = trips.filter(isListable);
   const priceFrom = listable.length ? Math.min(...listable.map((t) => t.startingPrice.amount)) : null;
-  const heroTrip = listable[0];
+  // Hero ticket: a Ghumbo pick if there is one, else the next departure out.
+  const pick = listable.find((t) => t.isRecommended);
+  const heroTrip = pick ?? listable[0];
 
+  // Destination cards: live places, with their trips grouped from the one catalog request.
   const liveCountries = countries.filter((c) => c.status === "live");
-  const places = (
-    await Promise.all(
-      liveCountries.map(async (country) => {
-        const destinations = await getDestinations(country.name.toLowerCase());
-        return Promise.all(
-          destinations.map(async (d) => ({ destination: d, trips: await getTripsByDestination(d.slug) })),
-        );
-      }),
-    )
-  ).flat();
+  const destinations = (await Promise.all(liveCountries.map((c) => getDestinations(countrySlug(c))))).flat();
+  const places = destinations.map((d) => ({ destination: d, trips: trips.filter((t) => t.destination?.slug === d.slug) }));
 
   const months = [...new Set(listable.map((t) => t.nextDeparture.startDate.slice(0, 7)))]
     .sort()
@@ -56,7 +51,11 @@ export default async function Home() {
             bring the playlist.
           </p>
           <div className="mt-6">
-            <HeroSearch destinations={places.map((p) => ({ value: p.destination.slug, label: p.destination.name }))} months={months} />
+            <HeroSearch
+              destinations={places.map((p) => ({ value: p.destination.slug, label: p.destination.name }))}
+              months={months}
+              vibes={vibeOptions(listable)}
+            />
           </div>
         </div>
         {heroTrip && (
@@ -73,7 +72,7 @@ export default async function Home() {
               <span className="absolute right-6 bottom-6">
                 <RoundStamp
                   tone="red"
-                  top="Next out"
+                  top={pick ? "Ghumbo pick" : "Next out"}
                   middle={formatTicketDate(heroTrip.nextDeparture.startDate).slice(4)}
                   bottom={heroTrip.destination?.name}
                 />

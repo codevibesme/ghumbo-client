@@ -2,8 +2,10 @@ import { useSessionStorageJson } from "@/lib/use-session-storage";
 import type { SentRequest } from "./types";
 
 /*
- * The request just sent from this tab, handed from the form to the "Request
- * sent" page through sessionStorage (the backend has no GET by code yet).
+ * A guest's request just sent from this tab, handed from the form to the
+ * "Request sent" page through sessionStorage. GET /booking-requests/:code is
+ * owner-only, so guests can't load it; signed-in travellers go to
+ * /my-trips/[code] instead.
  */
 
 const SENT_KEY = "ghumbo_req";

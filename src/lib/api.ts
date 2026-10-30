@@ -20,6 +20,16 @@ export class ApiError extends Error {
   }
 }
 
+/** The backend's list envelope (PaginatedResponseDto). */
+export type Paginated<T> = {
+  data: T[];
+  page: number;
+  size: number;
+  total: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+};
+
 const DEVICE_KEY = "ghumbo_device";
 
 /** Stable per-browser id the backend stores on each session. */

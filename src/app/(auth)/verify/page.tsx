@@ -11,12 +11,12 @@ export const metadata: Metadata = {
 export default function VerifyPage() {
   return (
     <>
-      <header className="flex flex-col gap-3">
-        <Kicker>Check your email</Kicker>
-        <h1 className="m-0 type-h1">Enter your code.</h1>
+      <header className="flex flex-col gap-2">
+        <Kicker className="leading-[1.3]">Step 2 of 2 · Verify your email</Kicker>
+        <h1 className="m-0 type-h1">Check your inbox.</h1>
       </header>
       {/* The resend countdown reads the clock, so the form renders per visit, not at build time. */}
-      <Suspense fallback={<div className="min-h-[280px]" aria-busy="true" />}>
+      <Suspense fallback={<div className="min-h-[420px]" aria-busy="true" />}>
         <VerifyForm />
       </Suspense>
     </>

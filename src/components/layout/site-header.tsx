@@ -8,7 +8,7 @@ import { Dialog } from "radix-ui";
 import { Suspense, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { type NavKey, mainNav } from "@/config/site";
-import { initials, photoUrl, useSession } from "@/features/auth/session";
+import { fullName, initials, photoUrl, useSession } from "@/features/auth/session";
 import { ThemeToggle } from "@/features/theme/theme-toggle";
 import { cn } from "@/lib/cn";
 import { Logo } from "./logo";
@@ -64,7 +64,7 @@ function HeaderBar({ current, user: userOverride, minimal }: SiteHeaderProps) {
   const user =
     userOverride ??
     (session.user
-      ? { name: session.user.name, initials: initials(session.user), photo: photoUrl(session.user) }
+      ? { name: fullName(session.user), initials: initials(session.user), photo: photoUrl(session.user) }
       : undefined);
 
   return (

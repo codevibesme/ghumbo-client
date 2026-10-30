@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
-import { Kicker } from "@/components/ui/section-header";
 import { ProfileDetails } from "./_components/profile-details";
 
 export const metadata: Metadata = {
-  title: "Your account",
+  title: "Profile & settings",
   robots: { index: false, follow: false },
 };
 
-// Placeholder until the profile screen is designed: shows who's signed in and offers sign out.
+// T14 Profile & settings. Signed-in only; the user comes from the session.
 export default function ProfilePage() {
   return (
-    <main className="page-container flex flex-1 flex-col gap-6 py-12 md:py-20">
-      <Kicker>Account</Kicker>
-      <h1 className="m-0 type-h1">Your account</h1>
+    <main className="page-container flex flex-1 flex-col gap-8 pt-10 pb-16 md:pt-12 md:pb-24">
       <ProfileDetails />
     </main>
   );
