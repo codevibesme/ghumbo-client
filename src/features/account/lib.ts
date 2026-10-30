@@ -127,10 +127,12 @@ export function formatStamp(value: string) {
 }
 
 /** "₹18,998", or with another currency code "USD 18,998". The backend sends codes in lowercase ("inr"). */
+const WHOLE_NUMBER = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 });
+
 export function formatMoney(amount: number, currency: string) {
   const code = currency.toUpperCase();
   if (code === "INR") return formatINR(amount);
-  return `${code} ${new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(amount)}`;
+  return `${code} ${WHOLE_NUMBER.format(amount)}`;
 }
 
 /** "+919830012345" → "+91 98300 12345". */

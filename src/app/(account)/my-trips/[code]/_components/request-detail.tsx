@@ -2,7 +2,7 @@
 
 import { RefreshCw, SearchX } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
@@ -187,7 +187,7 @@ function RequestTicket({
             <dl className="m-0 grid grid-cols-3 gap-3 px-5 py-4">
               <StubFact label="Depart">{formatTicketDate(r.startDate)}</StubFact>
               <StubFact label="Return">{formatTicketDate(r.endDate)}</StubFact>
-              {length && <StubFact label="Length">{length}</StubFact>}
+              {length !== null && <StubFact label="Length">{length}</StubFact>}
             </dl>
           </div>
           <div className="flex flex-col gap-2 rounded-ticket border-[1.5px] border-line bg-card px-5 py-4">
@@ -234,6 +234,12 @@ function WithdrawActions({
 }) {
   const [step, setStep] = useState<"idle" | "confirm" | "pending">("idle");
   const [error, setError] = useState<string | null>(null);
+  // The confirm panel replaces the button in place, so focus moves to its heading when it opens.
+  const heading = useRef<HTMLHeadingElement>(null);
+  const open = step !== "idle";
+  useEffect(() => {
+    if (open) heading.current?.focus();
+  }, [open]);
 
   if (r.status === "withdrawn" || r.status === "closed") {
     return (
@@ -283,13 +289,12 @@ function WithdrawActions({
   }
 
   return (
-    <div
-      role="alertdialog"
+    <section
       aria-labelledby="withdraw-h"
       aria-describedby="withdraw-d"
       className="flex flex-col gap-3 rounded-ticket border-[1.5px] border-red bg-card px-5 py-5"
     >
-      <h2 id="withdraw-h" className="m-0 type-h4">
+      <h2 id="withdraw-h" ref={heading} tabIndex={-1} className="m-0 type-h4 outline-none">
         Withdraw request {r.code}?
       </h2>
       <p id="withdraw-d" className="m-0 type-small">
@@ -309,6 +314,6 @@ function WithdrawActions({
           Keep my request
         </Button>
       </div>
-    </div>
+    </section>
   );
 }

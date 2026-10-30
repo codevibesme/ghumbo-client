@@ -147,17 +147,19 @@ function applyFilters(trips: TripListItem[], f: Filters) {
   return shown;
 }
 
-function TripsBoard({ trips, catalog, filters }: { trips: TripListItem[] | null; catalog: TripListItem[]; filters: Filters }) {
-  // Facets come from the whole catalog so they don't vanish while a search is on.
+/** Facet options. They come from the whole catalog so they don't vanish while a search is on. */
+function facets(catalog: TripListItem[]) {
   const destinations: Option[] = [
     ...new Map(catalog.flatMap((t) => (t.destination ? [[t.destination.slug, t.destination.name] as const] : []))).entries(),
   ].map(([value, label]) => ({ value, label }));
   const months: Option[] = [...new Set(catalog.filter(isListable).map((t) => t.nextDeparture.startDate.slice(0, 7)))]
     .sort()
     .map((m) => ({ value: m, label: monthLabel(m) }));
-  const vibes = vibeOptions(catalog);
-  const shown = applyFilters(trips ?? [], filters);
+  return { destinations, months, vibes: vibeOptions(catalog) };
+}
 
+/** The removable chips for every filter (and the search) that is set. */
+function appliedFilters(filters: Filters, destinations: Option[]) {
   const labelOf: Record<Exclude<keyof Filters, "sort">, (v: string) => string> = {
     q: (v) => `Search: ${v}`,
     vibe: (v) => `Vibe: ${v}`,
@@ -166,21 +168,27 @@ function TripsBoard({ trips, catalog, filters }: { trips: TripListItem[] | null;
     budget: (v) => BUDGETS.find((o) => o.value === v)?.label ?? v,
     duration: (v) => DURATIONS.find((o) => o.value === v)?.label ?? v,
   };
-  const applied = (Object.keys(labelOf) as (keyof typeof labelOf)[]).flatMap((key) => {
+  return (Object.keys(labelOf) as (keyof typeof labelOf)[]).flatMap((key) => {
     const v = filters[key];
     return v ? [{ key, label: labelOf[key](v) }] : [];
   });
+}
+
+function countLine(trips: TripListItem[] | null, shown: number, filters: Filters, filterCount: number) {
+  if (!trips) return "Loading trips…";
+  const verb = shown === 1 ? "matches" : "match";
+  if (filters.q) return `${plural(shown)} ${verb} “${filters.q}”.`;
+  if (filterCount) return `${plural(shown)} ${verb} these filters.`;
+  return `${plural(shown)} on the board.`;
+}
+
+function TripsBoard({ trips, catalog, filters }: { trips: TripListItem[] | null; catalog: TripListItem[]; filters: Filters }) {
+  const { destinations, months, vibes } = facets(catalog);
+  const shown = applyFilters(trips ?? [], filters);
+  const applied = appliedFilters(filters, destinations);
   const filterCount = applied.filter((a) => a.key !== "q").length;
   const clearAllHref = hrefFor({ sort: filters.sort });
-
   const searchMissed = Boolean(trips && filters.q && !trips.some(isListable));
-  const countLine = !trips
-    ? "Loading trips…"
-    : filters.q
-      ? `${plural(shown.length)} ${shown.length === 1 ? "matches" : "match"} “${filters.q}”.`
-      : filterCount
-        ? `${plural(shown.length)} ${shown.length === 1 ? "matches" : "match"} these filters.`
-        : `${plural(shown.length)} on the board.`;
 
   const panel = (
     <>
@@ -198,7 +206,7 @@ function TripsBoard({ trips, catalog, filters }: { trips: TripListItem[] | null;
         <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Trips" }]} />
         <h1 className="m-0 mt-4 type-h1">All trips</h1>
         <p className="m-0 mt-4 max-w-[52ch] type-body-l font-semibold" aria-live="polite">
-          {countLine}
+          {countLine(trips, shown.length, filters, filterCount)}
         </p>
         <p className="m-0 mt-2 max-w-[68ch] type-small text-muted">
           Showing every live destination. Fixed dates, groups of up to 18; prices are per person, twin sharing, GST included.

@@ -64,7 +64,8 @@ export function OtpInput({ digits, onChange, invalid, describedBy, disabled, ref
   return (
     <div className="flex gap-1.5 md:gap-2">
       {digits.map((digit, i) => (
-        // Boxes are positional and never reorder.
+        // Boxes are positional and never reorder, so the index is their identity.
+        // react-doctor-disable-next-line react-doctor/no-array-index-as-key
         <span key={i} className="relative block h-14 w-12 flex-none md:h-[60px] md:w-[52px]">
           <input
             ref={(el) => {

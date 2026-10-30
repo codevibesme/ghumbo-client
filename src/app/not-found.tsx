@@ -17,6 +17,13 @@ export const metadata: Metadata = {
 };
 
 // T16 404. Root-level so unknown URLs anywhere get the site chrome.
+/** The split-flap "404"; the two 4s need distinct keys. */
+const FLAPS = [
+  { id: "hundreds", digit: "4" },
+  { id: "tens", digit: "0" },
+  { id: "ones", digit: "4" },
+];
+
 export default async function NotFound() {
   const listable = (await getAllTrips()).filter(isListable);
   const priceFrom = listable.length ? Math.min(...listable.map((t) => t.startingPrice.amount)) : null;
@@ -79,9 +86,9 @@ export default async function NotFound() {
               <span>ERROR 404</span>
             </div>
             <div className="flex justify-center gap-2">
-              {["4", "0", "4"].map((digit, i) => (
+              {FLAPS.map(({ id, digit }) => (
                 <span
-                  key={i}
+                  key={id}
                   className="relative inline-flex h-[104px] w-[78px] items-center justify-center rounded-ticket bg-board-rule text-[78px] leading-none font-extrabold text-flap md:h-32 md:w-24 md:text-[96px]"
                 >
                   {digit}

@@ -1,7 +1,6 @@
 import { CalendarDays, Check, ChevronDown, Mail, Phone, UserRound, UsersRound, X } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import type { ReactNode } from "react";
 import { Logo } from "@/components/layout/logo";
 import { JsonLd } from "@/components/seo/json-ld";
 import { SectionHeader } from "@/components/ui/section-header";
@@ -364,11 +363,11 @@ function TripPass() {
   );
 }
 
-function CheckList({ items }: { items: ReactNode[] }) {
+function CheckList({ items }: { items: string[] }) {
   return (
     <ul className="m-0 flex list-none flex-col gap-2 p-0">
-      {items.map((item, i) => (
-        <li key={i} className="grid grid-cols-[20px_1fr] gap-2.5 text-[14px] leading-[1.45] text-muted">
+      {items.map((item) => (
+        <li key={item} className="grid grid-cols-[20px_1fr] gap-2.5 text-[14px] leading-[1.45] text-muted">
           <Check size={18} aria-hidden className="mt-px text-green" />
           {item}
         </li>

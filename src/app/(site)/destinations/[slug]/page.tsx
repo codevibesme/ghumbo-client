@@ -303,11 +303,11 @@ const DECIDED = [
  * country, Ghumbo picks first.
  */
 async function ComingSoonView({ destination, country }: { destination: Destination; country?: Country }) {
-  const neighbours = country ? (await getDestinations(countrySlug(country))).map((d) => d.slug) : [];
+  const neighbours = new Set(country ? (await getDestinations(countrySlug(country))).map((d) => d.slug) : []);
   const all = await getAllTrips();
   const related = toTourSummaries(
     all
-      .filter((t) => !neighbours.length || (t.destination !== null && neighbours.includes(t.destination.slug)))
+      .filter((t) => !neighbours.size || (t.destination !== null && neighbours.has(t.destination.slug)))
       .toSorted((a, b) => Number(Boolean(b.isRecommended)) - Number(Boolean(a.isRecommended))),
   ).slice(0, 3);
 
