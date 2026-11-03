@@ -6,9 +6,9 @@ import { TextLink } from "@/components/ui/text-link";
 import { getCountries, getDestinations } from "@/features/destinations/api";
 import { DestinationTicket } from "@/features/destinations/components/destination-card";
 import { countrySlug, dayRange, destinationHref, firstSentence, tripStats } from "@/features/destinations/lib";
-import { getAllTrips } from "@/features/tours/api";
+import { getAllTrips, getUpcomingDepartures } from "@/features/tours/api";
 import { DepartureBoard } from "@/features/tours/components/departure-board";
-import { isListable, monthLabel, toBoardRows, vibeOptions } from "@/features/tours/mappers";
+import { isListable, monthLabel, toUpcomingBoardRow, vibeOptions } from "@/features/tours/mappers";
 import { formatINR, formatTicketDate } from "@/lib/format";
 import { BookingSteps, HeroSearch, WhyGhumbo } from "./_components/home-parts";
 
@@ -17,8 +17,10 @@ export default async function Home() {
   "use cache";
   cacheLife("minutes");
 
-  const [trips, countries] = await Promise.all([getAllTrips(), getCountries()]);
+  const [trips, countries, upcoming] = await Promise.all([getAllTrips(), getCountries(), getUpcomingDepartures()]);
   const listable = trips.filter(isListable);
+  // "Leaving soon": the next four departures across all trips, as on the design.
+  const boardRows = upcoming.slice(0, 4).map(toUpcomingBoardRow);
   const priceFrom = listable.length ? Math.min(...listable.map((t) => t.startingPrice.amount)) : null;
   // Hero ticket: a Ghumbo pick if there is one, else the next departure out.
   const pick = listable.find((t) => t.isRecommended);
@@ -86,7 +88,7 @@ export default async function Home() {
         )}
       </section>
 
-      {listable.length > 0 && (
+      {boardRows.length > 0 && (
         <section className="page-container py-10">
           <DepartureBoard
             title="Leaving soon"
@@ -95,7 +97,7 @@ export default async function Home() {
                 All trips →
               </TextLink>
             }
-            rows={toBoardRows(listable, 6)}
+            rows={boardRows}
             footnote="PER PERSON, TWIN SHARING · GST INCLUDED · SEATS UPDATE LIVE"
           />
         </section>

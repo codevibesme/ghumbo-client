@@ -135,6 +135,18 @@ export type TripDeparture = {
   amount: string;
 };
 
+/** GET /departures/upcoming item: a departure with its trip and destination. Only the fields the board reads. */
+export type UpcomingDeparture = TripDeparture & {
+  trip: {
+    id: string;
+    name: string;
+    slug: string;
+    status: "draft" | "live";
+    durationDays: number;
+    destination: { slug: string; name: string; status: "live" | "coming_soon" } | null;
+  };
+};
+
 /** GET /reviews/trip/:tripId item. */
 export type TripReview = {
   id: string;

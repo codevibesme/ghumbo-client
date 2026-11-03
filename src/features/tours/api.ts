@@ -1,7 +1,7 @@
 import "server-only";
 import { cacheLife } from "next/cache";
 import { get, getOrNull, type Paginated } from "@/lib/backend";
-import type { Trip, TripDeparture, TripListItem, TripReview } from "./types";
+import type { Trip, TripDeparture, TripListItem, TripReview, UpcomingDeparture } from "./types";
 
 const ALL = 50;
 
@@ -60,4 +60,25 @@ export async function getReviews(tripId: string) {
   "use cache";
   cacheLife("minutes");
   return get<Paginated<TripReview>>(`/reviews/trip/${encodeURIComponent(tripId)}`, { size: 10 });
+}
+
+/**
+ * The next departures across every trip, soonest first, for the "Leaving soon"
+ * board. The backend returns up to 10; only open departures of live trips in
+ * live destinations that haven't started are kept, in case it sends others.
+ */
+export async function getUpcomingDepartures() {
+  "use cache";
+  cacheLife("minutes");
+  const today = new Date().toISOString().slice(0, 10);
+  const all = await get<UpcomingDeparture[]>("/departures/upcoming");
+  return all
+    .filter(
+      (d) =>
+        d.status === "open" &&
+        d.startDate.slice(0, 10) >= today &&
+        d.trip.status === "live" &&
+        d.trip.destination?.status !== "coming_soon",
+    )
+    .toSorted((a, b) => a.startDate.localeCompare(b.startDate) || a.trip.name.localeCompare(b.trip.name));
 }

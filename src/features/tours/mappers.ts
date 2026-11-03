@@ -9,6 +9,7 @@ import type {
   Trip,
   TripDeparture,
   TripListItem,
+  UpcomingDeparture,
 } from "./types";
 
 /*
@@ -60,23 +61,16 @@ export function toTourSummaries(trips: TripListItem[]) {
   return trips.map(toTourSummary).filter((t): t is TourSummary => t !== null);
 }
 
-export function toBoardRow(t: TripListItem): BoardRow | null {
-  if (!isListable(t)) return null;
+/** One departure on the board: its own date, price and seats. */
+export function toUpcomingBoardRow(d: UpcomingDeparture): BoardRow {
   return {
-    href: tripHref(t.slug),
-    date: formatTicketDate(t.nextDeparture.startDate),
-    trip: t.name,
-    days: `${t.durationDays}D`,
-    price: t.startingPrice.amount,
-    seatsLeft: t.nextDeparture.seatsLeft,
+    href: tripHref(d.trip.slug),
+    date: formatTicketDate(d.startDate),
+    trip: d.trip.name,
+    days: `${d.trip.durationDays}D`,
+    price: Number(d.amount),
+    seatsLeft: Math.max(d.capacity - d.bookedSeats, 0),
   };
-}
-
-export function toBoardRows(trips: TripListItem[], limit: number) {
-  return trips
-    .map(toBoardRow)
-    .filter((r): r is BoardRow => r !== null)
-    .slice(0, limit);
 }
 
 export function toDeparture(d: TripDeparture, times?: { depart?: string; return?: string }): Departure {
