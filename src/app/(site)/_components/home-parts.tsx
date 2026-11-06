@@ -121,7 +121,7 @@ const STEPS = [
   { title: "Request a seat", body: "Tell us who is coming. No payment now. We call within 24 hours." },
   {
     title: "Confirm and go",
-    body: "After the call, a deposit by secure link confirms your seat. Trip pack a week before; meet the group at the hub.",
+    body: "After the call, pay in full by secure link and your seat is confirmed. Trip pack a week before; meet the group at the hub.",
   },
 ];
 

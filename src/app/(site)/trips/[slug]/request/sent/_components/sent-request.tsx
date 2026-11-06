@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { Logo } from "@/components/layout/logo";
 import { StatusBadge } from "@/components/ui/badge";
 import { Kicker } from "@/components/ui/section-header";
+import { supportEmail, supportPhone } from "@/config/site";
 import { RoundStamp } from "@/components/ui/stamp";
 import { TearLine } from "@/components/ui/tear-line";
 import { buttonClasses } from "@/components/ui/variants";
@@ -72,8 +73,14 @@ export function SentRequestView({
               </h1>
             </div>
             <p className="m-0 max-w-[52ch] type-body-l">
-              Thanks, {firstName}. Your seat request for {shortName(tripName)} is in. We call you within 24 hours. No payment
-              yet.
+              Thanks, {firstName}. Your seat request for {shortName(tripName)} is in. We call you within 24 hours
+              {supportPhone && (
+                <>
+                  {" "}
+                  from <span className="whitespace-nowrap">{supportPhone.display}</span>
+                </>
+              )}
+              . No payment yet.
             </p>
             <div className="flex flex-wrap items-end gap-x-6 gap-y-2">
               <span className="flex flex-col gap-2">
@@ -149,7 +156,7 @@ export function SentRequestView({
           </div>
         </section>
         <p className="m-0 text-[14px] leading-[1.45] text-muted">
-          Need to change something? Write to <a href="mailto:support@ghumbo.com">support@ghumbo.com</a> and quote {sent.code}.
+          Need to change something? Write to <a href={`mailto:${supportEmail}`}>{supportEmail}</a> and quote {sent.code}.
         </p>
       </div>
     </>

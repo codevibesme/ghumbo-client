@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { legalLinks } from "@/config/legal";
 import { footerColumns, footerCompactLinks, footerTagline } from "@/config/site";
 import { ThemeToggle } from "@/features/theme/theme-toggle";
 import { Logo } from "./logo";
@@ -6,8 +7,9 @@ import { Logo } from "./logo";
 /*
  * Board footer (#141A24): stock text, flap-yellow column heads, logo with coral
  * pin. Every page except sign-in / OTP. Below 720px it collapses to the compact
- * two-column footer from the canvas. Terms / Privacy are not linked: those
- * pages are not planned. The theme switch is ours (dark mode), not the canvas's.
+ * two-column footer from the canvas. The bottom row links Terms, Privacy and the
+ * cancellation policy, as on the canvas. The theme switch is ours (dark mode),
+ * not the canvas's.
  */
 
 const footLink = "text-[15px] leading-[1.2] text-on-board no-underline hover:text-flap";
@@ -71,6 +73,17 @@ function FooterBase() {
   return (
     <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t-2 border-dashed border-board-dash pt-4 font-mono text-[12px] font-medium leading-none tracking-[0.08em] text-board-label md:mt-10 md:pt-5">
       <span>© 2026 GHUMBO</span>
+      <span className="flex flex-wrap items-center gap-x-5 gap-y-1 md:ml-auto">
+        {Object.values(legalLinks).map((l) => (
+          <Link
+            key={l.href}
+            href={l.href}
+            className="inline-flex min-h-11 items-center uppercase text-on-board underline underline-offset-4 hover:text-flap"
+          >
+            {l.short}
+          </Link>
+        ))}
+      </span>
       <ThemeToggle tone="board" className="hidden md:inline-flex" />
     </div>
   );

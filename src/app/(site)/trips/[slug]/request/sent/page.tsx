@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SectionHeader } from "@/components/ui/section-header";
+import { supportPhone } from "@/config/site";
 import { getAllTrips } from "@/features/tours/api";
 import { getTripPageData } from "@/features/tours/trip-data";
 import { pad2 } from "@/lib/format";
@@ -19,11 +20,17 @@ export const metadata: Metadata = {
 
 function nextSteps(meetingPoint: string | null) {
   return [
-    { when: "Within 24 hours", title: "We call you", body: "Save our number so you know it’s us." },
+    {
+      when: "Within 24 hours",
+      title: "We call you",
+      body: supportPhone
+        ? `From ${supportPhone.display}. Save the number so you know it’s us.`
+        : "Save our number so you know it’s us.",
+    },
     {
       when: "On the call",
       title: "Confirm your seat",
-      body: "We sort room sharing and answer questions, then send a secure link for the deposit. We never ask for an OTP on a call.",
+      body: "We sort room sharing and answer questions, then send a secure link to pay for the trip in full. We never ask for an OTP on a call.",
     },
     {
       when: "7 days before",

@@ -17,6 +17,7 @@ import { Stamp } from "@/components/ui/stamp";
 import { Stepper } from "@/components/ui/stepper";
 import { TearLine } from "@/components/ui/tear-line";
 import { Textarea } from "@/components/ui/textarea";
+import { supportEmail, supportPhone } from "@/config/site";
 import { useSession } from "@/features/auth/session";
 import type { User } from "@/features/auth/types";
 import { startYear } from "@/features/tours/mappers";
@@ -64,8 +65,8 @@ function lockedDetails(user: User | null): LockedDetails {
  * B08 form + live summary. Signed-out friendly; when signed in, the account's
  * details are filled in and locked, and the session cookie links the request
  * to the account.
- * Estimate = per-person price × travellers. Mobile is optional here (the
- * backend accepts null) although the canvas marks it required.
+ * Estimate = per-person price × travellers. Mobile is required, as on the
+ * canvas: we call every request.
  */
 export function RequestForm({
   tripSlug,
@@ -133,7 +134,7 @@ export function RequestForm({
         form:
           err.status === 400
             ? err.message
-            : "We couldn’t send your request right now. Try again in a minute, or write to support@ghumbo.com.",
+            : `We couldn’t send your request right now. Try again in a minute, or write to ${supportEmail}.`,
       });
     }
   }
@@ -195,13 +196,14 @@ export function RequestForm({
                 required
               />
             </Field>
-            <Field label="Mobile number" optional={!locked.phone} hint="So we can call you within 24 hours." error={e.phone}>
+            <Field label="Mobile number" hint="So we can call you within 24 hours." error={e.phone}>
               <PhoneInput
                 name="phone"
                 maxLength={10}
                 placeholder="98300 12345"
                 defaultValue={locked.phone?.replace(/^\+91/, "")}
                 disabled={!!locked.phone}
+                required
               />
             </Field>
           </div>
@@ -245,7 +247,19 @@ export function RequestForm({
           </Field>
           <div className="flex flex-col gap-1">
             <Checkbox name="consent" required aria-invalid={e.consent ? true : undefined}>
-              Ghumbo can call, SMS or WhatsApp me about this request.
+              Ghumbo can call, SMS or WhatsApp me about this request. I have read the{" "}
+              <Link href="/terms" target="_blank">
+                Terms
+              </Link>
+              ,{" "}
+              <Link href="/privacy" target="_blank">
+                Privacy policy
+              </Link>{" "}
+              and{" "}
+              <Link href="/cancellation-policy" target="_blank">
+                Cancellation policy
+              </Link>
+              .
             </Checkbox>
             {e.consent && <span className="type-small text-red">{e.consent}</span>}
           </div>
@@ -268,7 +282,7 @@ export function RequestForm({
 
       <div className="order-first flex w-full max-w-[480px] flex-col gap-4 min-[960px]:sticky min-[960px]:top-6 min-[960px]:order-none min-[960px]:max-w-none">
         <RequestSummary image={image} tripName={tripName} route={route} departure={dep} travelers={travelerCount} />
-        <AfterYouSend />
+        <AfterYouSend total={dep ? dep.price * travelerCount : null} />
       </div>
 
       <StickyActionBar
@@ -409,19 +423,20 @@ function RequestSummary({
   );
 }
 
-const NEXT_STEPS = [
-  "We call you within 24 hours.",
-  "A deposit, by secure link, confirms your seat.",
-  "Your trip pack lands 7 days before you leave.",
-];
-
-/** Desktop only, under the summary. The canvas's [Support phone] / [Deposit amount] are left out until site config exists. */
-function AfterYouSend() {
+/** Desktop only, under the summary. The amount follows the picked date and travellers. */
+function AfterYouSend({ total }: { total: number | null }) {
+  const steps = [
+    supportPhone ? `We call you within 24 hours from ${supportPhone.display}.` : "We call you within 24 hours.",
+    total
+      ? `Pay ${formatINR(total)} in full by secure link, and your seat is confirmed.`
+      : "Pay in full by secure link, and your seat is confirmed.",
+    "Your trip pack lands 7 days before you leave.",
+  ];
   return (
     <div className="hidden flex-col gap-3 rounded-ticket border-2 border-dashed border-tear px-5 py-4 md:flex">
       <span className="type-stub text-muted">After you send it</span>
       <ol className="m-0 flex list-none flex-col gap-2 p-0">
-        {NEXT_STEPS.map((step, i) => (
+        {steps.map((step, i) => (
           <li key={step} className="grid grid-cols-[28px_minmax(0,1fr)] gap-2 text-[14px] leading-[1.45]">
             <span className="font-mono font-semibold text-red">{pad2(i + 1)}</span>
             {step}

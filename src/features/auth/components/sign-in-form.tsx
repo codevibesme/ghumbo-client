@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { redirect, useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
@@ -141,7 +142,10 @@ export function SignInForm({ next, error }: { next: string; error?: string }) {
       </div>
 
       <div className="mt-6 flex flex-col gap-1 border-t-2 border-dashed border-tear pt-4">
-        <p className="m-0 type-small text-muted">Just browsing? You can request a seat without an account.</p>
+        <p className="m-0 type-small text-muted [&_a]:text-link [&_a]:underline [&_a:hover]:text-red">
+          By continuing you agree to our <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy policy</Link>.
+          Just browsing? You can request a seat without an account.
+        </p>
         <div className="flex">
           <TextLink href={next}>Continue as guest</TextLink>
         </div>

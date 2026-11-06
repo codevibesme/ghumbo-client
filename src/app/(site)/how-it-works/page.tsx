@@ -6,7 +6,8 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { SectionHeader } from "@/components/ui/section-header";
 import { TearLine } from "@/components/ui/tear-line";
 import { buttonClasses } from "@/components/ui/variants";
-import { supportEmail } from "@/config/site";
+import { business, cancellationSummary, legalLinks } from "@/config/legal";
+import { supportEmail, supportPhone } from "@/config/site";
 import { getAllTrips } from "@/features/tours/api";
 import { RouteLine } from "@/features/tours/components/route-line";
 import { isListable } from "@/features/tours/mappers";
@@ -16,9 +17,11 @@ import { formatINR } from "@/lib/format";
 /*
  * T07 How it works. Static copy from the canvas, with three changes forced by
  * product decisions: no child fares, no "I'm flexible", and sign-in is Google or
- * email only. Business values the canvas leaves open ([Support phone],
- * [Deposit amount] …) stay as the canvas's own placeholders until site config
- * exists. Trip count and lowest price come from the catalog.
+ * email only, and the trip is paid in full after the call (no deposit, no
+ * balance). The support phone and business name come from the env; values the
+ * canvas leaves open ([Single supplement] …) stay as its own placeholders until
+ * we have them. Trip count and lowest price come from the
+ * catalog.
  */
 
 const UPDATED = { iso: "2026-10-28", label: "28 Oct 2026" };
@@ -56,10 +59,10 @@ const STEPS: { kicker: string; title: string; body: string; points: string[]; no
   {
     kicker: "We call, you confirm",
     title: "A real person calls you",
-    body: "Someone from Ghumbo calls from [Support phone], answers your questions and holds your seat. Then we email a secure link for the [Deposit amount] deposit, from billing@mail.ghumbo.com.",
+    body: `Someone from Ghumbo calls${supportPhone ? ` from ${supportPhone.display}` : ""}, answers your questions and sorts your room. Then we email a secure link from billing@mail.ghumbo.com to pay for the trip in full. Your seat is confirmed once it’s paid.`,
     points: [
       "Room sharing sorted on the call",
-      "The balance is due by [Balance due date]",
+      "One payment, in full, once you’re sure",
       "Your trip pack lands 7 days before you leave",
       "Meet the group at the hub on day one",
     ],
@@ -98,23 +101,23 @@ const NEVER_INCLUDED = ["Train or flight to the hub", "Meals not listed", "Optio
 const MONEY = [
   { step: "Step 1 · the call", amount: "₹0", mono: true, body: "We confirm the date and room sharing, and answer every question." },
   {
-    step: "Step 2 · deposit",
-    amount: "[Deposit amount]",
+    step: "Step 2 · pay in full",
+    amount: "100%",
     mono: true,
-    body: "Holds your seat. Paid by secure link to [Legal company name], never to a personal account.",
+    body: `The whole trip cost, by secure link to ${business.name}, never to a personal account. Paid means confirmed; unpaid means the seat isn’t yours yet.`,
   },
   {
-    step: "Step 3 · balance",
-    amount: "Before you go",
+    step: "Step 3 · just show up",
+    amount: "Nothing more",
     mono: false,
-    body: "The balance is due by [Balance due date]. We confirm the exact date on the call.",
+    body: "Everything in the ticket is paid for. Only meals not listed and optional add-ons are paid on the trip.",
   },
 ];
 
-const FAQS: { q: string; a: string }[] = [
+const FAQS: { q: string; a: string; link?: { label: string; href: string } }[] = [
   {
     q: "How do I pay, and how do I know it’s really you?",
-    a: "After our call we email a secure payment link from billing@mail.ghumbo.com. The payee is [Legal company name]. We never ask for an OTP, card details or a transfer to a personal account over the phone. If anyone does, hang up and call [Support phone].",
+    a: `After our call we email a secure payment link from billing@mail.ghumbo.com. The payee is ${business.name}. We never ask for an OTP, card details or a transfer to a personal account over the phone. If anyone does, hang up and ${supportPhone ? `call ${supportPhone.display}` : `write to ${supportEmail}`}.`,
   },
   {
     q: "Do I need an account to request a seat?",
@@ -138,7 +141,8 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "What if I need to cancel?",
-    a: "Our policy: [Cancellation policy]. We walk you through it on the call, before any deposit.",
+    a: cancellationSummary,
+    link: { label: `Read the full ${legalLinks.cancellation.label.toLowerCase()}`, href: legalLinks.cancellation.href },
   },
   {
     q: "Who is the coordinator?",
@@ -146,7 +150,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "How do I reach you?",
-    a: `Call [Support phone] or write to ${supportEmail}. We reply within [Support reply time].`,
+    a: `${supportPhone ? `Call ${supportPhone.display} or write` : "Write"} to ${supportEmail}. We reply within [Support reply time].`,
   },
 ];
 
@@ -284,10 +288,14 @@ export default async function HowItWorksPage() {
           <p className="m-0 type-body text-muted">The things people ask us most. Still stuck? We’re a phone call away.</p>
           <div className="flex flex-col gap-2 rounded-ticket border-2 border-dashed border-tear px-5 py-4">
             <span className="type-stub text-muted">Talk to us</span>
-            {/* The canvas leaves the number open; it gets a tel: link once site config has one. */}
-            <span className="inline-flex min-h-11 items-center gap-2 font-mono text-[15px] font-semibold leading-[1.2] text-link">
-              <Phone size={18} aria-hidden /> [Support phone]
-            </span>
+            {supportPhone && (
+              <a
+                href={supportPhone.href}
+                className="inline-flex min-h-11 items-center gap-2 font-mono text-[15px] font-semibold leading-[1.2] text-link underline"
+              >
+                <Phone size={18} aria-hidden /> {supportPhone.display}
+              </a>
+            )}
             <a
               href={`mailto:${supportEmail}`}
               className="inline-flex min-h-11 items-center gap-2 font-mono text-[15px] font-semibold leading-[1.2] text-link underline"
@@ -307,7 +315,17 @@ export default async function HowItWorksPage() {
                 <h3 className="m-0 [font:inherit]">{f.q}</h3>
                 <ChevronDown size={20} aria-hidden className="shrink-0 transition-transform group-open:rotate-180" />
               </summary>
-              <p className="m-0 max-w-[68ch] pb-5 type-body">{f.a}</p>
+              <p className="m-0 max-w-[68ch] pb-5 type-body">
+                {f.a}
+                {f.link && (
+                  <>
+                    {" "}
+                    <Link href={f.link.href} className="text-link underline underline-offset-[3px] hover:text-red">
+                      {f.link.label} →
+                    </Link>
+                  </>
+                )}
+              </p>
             </details>
           ))}
         </div>

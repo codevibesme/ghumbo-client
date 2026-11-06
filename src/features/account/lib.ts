@@ -34,11 +34,11 @@ export const STEPS: { status: BookingRequestStatus; body: (r: UserBookingRequest
   { status: "contacted", body: () => "We call you to go over the trip, rooms and dates." },
   {
     status: "in_progress",
-    body: () => "We check rooms for your dates, then call again with the deposit details.",
+    body: () => "We check rooms for your dates, then send you a secure link to pay.",
   },
   {
     status: "converted",
-    body: () => "A deposit confirms your seats. Your trip pack follows 7 days before departure.",
+    body: () => "Paid in full: your seats are confirmed. Your trip pack follows 7 days before departure.",
   },
 ];
 
@@ -50,7 +50,7 @@ export function statusLine(r: UserBookingRequest) {
     case "contacted":
       return "We called and talked you through the trip. Waiting for your go-ahead.";
     case "in_progress":
-      return `We’re checking rooms for your ${travellers(r.travelerCount)}. Expect a call with the deposit details.`;
+      return `We’re checking rooms for your ${travellers(r.travelerCount)}. Expect a link to pay once rooms are set.`;
     case "converted":
       return "Seat booked. Your trip pack arrives 7 days before you leave.";
     case "closed":

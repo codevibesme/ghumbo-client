@@ -6,8 +6,8 @@ export type CreateBookingRequest = {
   firstName: string;
   lastName: string;
   email: string;
-  /** E.164, "+919830012345". */
-  phone: string | null;
+  /** E.164, "+919830012345". Required: we call every request within 24 hours. */
+  phone: string;
   travelerCount: number;
   query: string | null;
 };
@@ -32,7 +32,7 @@ export type UserBookingRequest = {
   firstName: string;
   lastName: string;
   email: string;
-  phone: string | null;
+  phone: string;
   /** When the request was sent. */
   createdAt: string;
   /** When the status (or anything else) last changed. */
@@ -60,7 +60,7 @@ export type SentRequest = {
   firstName: string;
   lastName: string;
   email: string;
-  phone: string | null;
+  phone: string;
   travelers: number;
   departureId: string;
   sentAt: string;

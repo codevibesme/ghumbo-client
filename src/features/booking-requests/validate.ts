@@ -27,7 +27,10 @@ export function validateRequest(
   if (!lastName) errors.lastName = "Tell us your last name.";
   else if (lastName.length > 50) errors.lastName = "Keep it under 50 characters.";
   if (!EMAIL_RE.test(email)) errors.email = "Enter a valid email address.";
-  if (phone && !/^[6-9]\d{9}$/.test(phone)) errors.phone = "Enter a 10-digit mobile number.";
+  if (!locked.phone) {
+    if (!phone) errors.phone = "Add your mobile number so we can call you.";
+    else if (!/^[6-9]\d{9}$/.test(phone)) errors.phone = "Enter a 10-digit mobile number.";
+  }
   if (!departureId) errors.departure = "Pick a departure.";
   if (form.get("consent") !== "on") errors.consent = "We need your OK to call you about this request.";
 
@@ -46,7 +49,7 @@ export function validateRequest(
       firstName,
       lastName,
       email,
-      phone: locked.phone ?? (phone ? `+91${phone}` : null),
+      phone: locked.phone ?? `+91${phone}`,
       travelerCount,
       query: message || null,
     },

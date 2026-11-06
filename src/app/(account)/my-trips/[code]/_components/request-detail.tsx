@@ -1,6 +1,6 @@
 "use client";
 
-import { RefreshCw, SearchX } from "lucide-react";
+import { Phone, RefreshCw, SearchX } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -13,6 +13,7 @@ import { Stamp } from "@/components/ui/stamp";
 import { TextLink } from "@/components/ui/text-link";
 import { TearLine } from "@/components/ui/tear-line";
 import { buttonClasses } from "@/components/ui/variants";
+import { supportEmail, supportPhone } from "@/config/site";
 import { useMyRequest, useSignedInUser } from "@/features/account/hooks";
 import {
   STATUS,
@@ -107,7 +108,6 @@ function RequestTicket({
   const estimate = Number(r.estimate);
   const perPerson = r.travelerCount > 0 ? estimate / r.travelerCount : estimate;
   const open = canWithdraw(r.status);
-  const photo = r.tripAsset?.type === "image" ? r.tripAsset : null;
 
   return (
     <>
@@ -197,59 +197,72 @@ function RequestTicket({
           <WithdrawActions request={r} onChange={onChange} />
         </div>
 
-        <aside className="flex flex-col gap-6 min-[60rem]:sticky min-[60rem]:top-6 min-[60rem]:self-start">
-          {/* The trip ticket: cover photo, route line, dates, and a way back to the trip page. */}
-          <section aria-label="Trip" className="flex flex-col rounded-ticket border-[1.5px] border-line bg-card">
-            {photo && (
-              <span className="relative block aspect-[16/10] overflow-hidden rounded-t-[4.5px] border-b-[1.5px] border-line">
-                <Image
-                  src={photo.url}
-                  alt={photo.label ?? r.tripName}
-                  fill
-                  sizes="(min-width: 960px) 360px, 100vw"
-                  className="object-cover"
-                />
-              </span>
-            )}
-            <div className="flex flex-col gap-1.5 p-5">
-              <span className="type-stub text-muted">
-                {[r.destinationName, length].filter(Boolean).join(" · ")}
-              </span>
-            </div>
-            <TearLine />
-            <dl className="m-0 grid grid-cols-3 gap-3 px-5 pt-4 pb-2">
-              <StubFact label="Depart">{formatTicketDate(r.startDate)}</StubFact>
-              <StubFact label="Return">{formatTicketDate(r.endDate)}</StubFact>
-              {/* The canvas has Seats here; requests carry no seat count, and the length is in the route line. */}
-              {r.isPeak && (
-                <div className="flex flex-col items-start gap-1.5">
-                  <dt className="type-stub text-muted">Dates</dt>
-                  <dd className="m-0">
-                    <Badge tone="peak">Peak</Badge>
-                  </dd>
-                </div>
-              )}
-            </dl>
-            {r.tripSlug && (
-              <div className="px-5 pb-2">
-                <TextLink href={`/trips/${r.tripSlug}`} className="inline-flex min-h-11 items-center">
-                  View trip page →
-                </TextLink>
-              </div>
-            )}
-          </section>
-          <div className="flex flex-col gap-2 rounded-ticket border-[1.5px] border-line bg-card px-5 py-4">
-            <span className="type-stub text-muted">Questions?</span>
-            <a href="mailto:support@ghumbo.com" className="type-h4 text-link hover:text-red">
-              support@ghumbo.com
-            </a>
-            <span className="font-mono text-[11px] font-medium uppercase leading-[1.4] tracking-[0.08em] text-muted">
-              Quote {r.code} when you write
-            </span>
-          </div>
-        </aside>
+        <RequestAside request={r} length={length} />
       </div>
     </>
+  );
+}
+
+/** The side column: the trip ticket (photo, route, dates, link back to the trip) and how to reach us. */
+function RequestAside({ request: r, length }: { request: UserBookingRequest; length: string | null }) {
+  const photo = r.tripAsset?.type === "image" ? r.tripAsset : null;
+  return (
+    <aside className="flex flex-col gap-6 min-[60rem]:sticky min-[60rem]:top-6 min-[60rem]:self-start">
+      {/* The trip ticket: cover photo, route line, dates, and a way back to the trip page. */}
+      <section aria-label="Trip" className="flex flex-col rounded-ticket border-[1.5px] border-line bg-card">
+        {photo && (
+          <span className="relative block aspect-[16/10] overflow-hidden rounded-t-[4.5px] border-b-[1.5px] border-line">
+            <Image
+              src={photo.url}
+              alt={photo.label ?? r.tripName}
+              fill
+              sizes="(min-width: 960px) 360px, 100vw"
+              className="object-cover"
+            />
+          </span>
+        )}
+        <div className="flex flex-col gap-1.5 p-5">
+          <span className="type-stub text-muted">
+            {[r.destinationName, length].filter(Boolean).join(" · ")}
+          </span>
+        </div>
+        <TearLine />
+        <dl className="m-0 grid grid-cols-3 gap-3 px-5 pt-4 pb-2">
+          <StubFact label="Depart">{formatTicketDate(r.startDate)}</StubFact>
+          <StubFact label="Return">{formatTicketDate(r.endDate)}</StubFact>
+          {/* The canvas has Seats here; requests carry no seat count, and the length is in the route line. */}
+          {r.isPeak && (
+            <div className="flex flex-col items-start gap-1.5">
+              <dt className="type-stub text-muted">Dates</dt>
+              <dd className="m-0">
+                <Badge tone="peak">Peak</Badge>
+              </dd>
+            </div>
+          )}
+        </dl>
+        {r.tripSlug && (
+          <div className="px-5 pb-2">
+            <TextLink href={`/trips/${r.tripSlug}`} className="inline-flex min-h-11 items-center">
+              View trip page →
+            </TextLink>
+          </div>
+        )}
+      </section>
+      <div className="flex flex-col gap-2 rounded-ticket border-[1.5px] border-line bg-card px-5 py-4">
+        <span className="type-stub text-muted">Questions?</span>
+        {supportPhone && (
+          <a href={supportPhone.href} className={buttonClasses({ fullWidth: true, className: "my-1 gap-2.5" })}>
+            <Phone size={18} strokeWidth={1.75} aria-hidden /> Call {supportPhone.display}
+          </a>
+        )}
+        <a href={`mailto:${supportEmail}`} className="type-h4 text-link hover:text-red">
+          {supportEmail}
+        </a>
+        <span className="font-mono text-[11px] font-medium uppercase leading-[1.4] tracking-[0.08em] text-muted">
+          Quote {r.code} when you {supportPhone ? "call or write" : "write"}
+        </span>
+      </div>
+    </aside>
   );
 }
 

@@ -1,4 +1,4 @@
-import { Calendar, CalendarDays, MapPin, Star, Users } from "lucide-react";
+import { Calendar, CalendarDays, MapPin, Phone, Star, Users } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { CSSProperties } from "react";
@@ -11,6 +11,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { TearLine } from "@/components/ui/tear-line";
 import { TextLink } from "@/components/ui/text-link";
 import { buttonClasses } from "@/components/ui/variants";
+import { supportPhone } from "@/config/site";
 import { destinationHref, summary } from "@/features/destinations/lib";
 import { getAllTrips, getReviews, getTripsByDestination } from "@/features/tours/api";
 import {
@@ -148,6 +149,7 @@ async function TripView({ data }: { data: TripPageData }) {
               <div className="hidden w-full max-w-[480px] self-stretch md:block min-[960px]:col-start-2 min-[960px]:row-start-1 min-[960px]:row-end-[span_var(--left-rows)] min-[960px]:max-w-none">
                 <div className="flex flex-col gap-4 min-[960px]:sticky min-[960px]:top-6">
                   <SelectedGroupPass from={ends.from ?? shortName(trip.name)} to={ends.to} />
+                  <CallUs />
                 </div>
               </div>
             )}
@@ -188,6 +190,7 @@ async function TripView({ data }: { data: TripPageData }) {
 
             <MeetingPoint ends={ends} lastDay={trip.durationDays} className={left} />
 
+            <CallUs className={`${left} md:hidden`} />
             <Reviews reviews={reviews.data} next={first} className={left} />
           </div>
         </div>
@@ -286,6 +289,23 @@ function MeetingPoint({ ends, lastDay, className }: { ends: TripPageData["ends"]
         )}
       </div>
     </section>
+  );
+}
+
+/** "Questions before you request? Call …": under the pass on desktop, before Reviews on phones. */
+function CallUs({ className }: { className?: string }) {
+  if (!supportPhone) return null;
+  return (
+    <div className={`flex items-start gap-3 rounded-ticket border-2 border-dashed border-tear px-4 py-4 md:px-5 ${className ?? ""}`}>
+      <Phone size={20} strokeWidth={1.75} aria-hidden className="mt-0.5 shrink-0 text-link" />
+      <p className="m-0 text-[14px] leading-[1.45]">
+        Questions before you request? Call{" "}
+        <a href={supportPhone.href} className="whitespace-nowrap font-semibold text-link underline underline-offset-[3px]">
+          {supportPhone.display}
+        </a>
+        .
+      </p>
+    </div>
   );
 }
 
