@@ -1,4 +1,4 @@
-import { ListFilter, SearchX, X } from "lucide-react";
+import { Funnel, SearchX, X } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -10,6 +10,7 @@ import { TearLine } from "@/components/ui/tear-line";
 import { TextLink } from "@/components/ui/text-link";
 import { buttonClasses, textLinkClasses } from "@/components/ui/variants";
 import { getAllTrips, searchTrips } from "@/features/tours/api";
+import { SortSelect } from "@/features/tours/components/sort-select";
 import { TourCard } from "@/features/tours/components/tour-cards";
 import { isListable, monthLabel, toTourSummaries, vibeOptions } from "@/features/tours/mappers";
 import type { TripListItem } from "@/features/tours/types";
@@ -208,8 +209,12 @@ function TripsBoard({ trips, catalog, filters }: { trips: TripListItem[] | null;
         <p className="m-0 mt-4 max-w-[52ch] type-body-l font-semibold" aria-live="polite">
           {countLine(trips, shown.length, filters, filterCount)}
         </p>
-        <p className="m-0 mt-2 max-w-[68ch] type-small text-muted">
-          Showing every live destination. Fixed dates, groups of up to 18; prices are per person, twin sharing, GST included.
+        <p className="m-0 mt-1 max-w-[68ch] type-small text-muted md:mt-2">
+          <span className="md:hidden">All live destinations. Per person, twin sharing, GST included.</span>
+          <span className="hidden md:inline">
+            Showing every live destination. Fixed dates, groups of up to 18; prices are per person, twin sharing, GST
+            included.
+          </span>
         </p>
       </div>
 
@@ -228,19 +233,46 @@ function TripsBoard({ trips, catalog, filters }: { trips: TripListItem[] | null;
         </aside>
 
         <section aria-label="Trips" className="flex min-w-0 flex-col gap-5">
-          {/* Phone: filters fold into a disclosure so the results stay near the top. */}
-          <details className="group lg:hidden">
-            <summary className={buttonClasses({ variant: "secondary", fullWidth: true, className: "list-none [&::-webkit-details-marker]:hidden" })}>
-              <ListFilter size={20} aria-hidden />
-              Filters{filterCount > 0 && ` (${filterCount})`}
-            </summary>
-            <div className="mt-3 flex flex-col gap-6 rounded-ticket border-[1.5px] border-line bg-card p-5">{panel}</div>
-          </details>
+          {/*
+            Phone: the Filters button and a sort select share one row, as on the canvas. Filters fold
+            into a disclosure (no JS needed) whose panel opens full width under the row; the select
+            sits over the right half of the row.
+          */}
+          <div className="relative lg:hidden">
+            <details className="group">
+              <summary
+                className={buttonClasses({
+                  variant: "secondary",
+                  className: "w-[calc(50%-6px)] list-none px-3 [&::-webkit-details-marker]:hidden",
+                })}
+              >
+                <Funnel size={20} strokeWidth={1.75} aria-hidden />
+                Filters{filterCount > 0 && ` (${filterCount})`}
+              </summary>
+              <div className="mt-3 flex flex-col gap-6 rounded-ticket border-[1.5px] border-line bg-card p-5">{panel}</div>
+            </details>
+            <div className="absolute top-0 right-0 w-[calc(50%-6px)]">
+              <SortSelect
+                options={SORTS.map((o) => ({
+                  label: o.label,
+                  href: hrefWith(filters, "sort", o.value),
+                  selected: (filters.sort ?? "soonest") === o.value,
+                }))}
+              />
+            </div>
+          </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="hidden flex-wrap items-center gap-3 lg:flex">
             <span className="type-label text-ink">Sort</span>
             <ChipLinks name="sort" options={SORTS} filters={filters} label="Sort" />
           </div>
+          <noscript>
+            {/* Without JS the phone select can't navigate: show the chips there too. */}
+            <div className="flex flex-wrap items-center gap-3 lg:hidden">
+              <span className="type-label text-ink">Sort</span>
+              <ChipLinks name="sort" options={SORTS} filters={filters} label="Sort" />
+            </div>
+          </noscript>
 
           {applied.length > 0 && (
             <div className="flex flex-wrap items-center gap-2">

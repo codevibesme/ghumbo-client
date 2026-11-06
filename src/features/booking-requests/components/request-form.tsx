@@ -139,7 +139,7 @@ export function RequestForm({
   }
 
   return (
-    <div className="grid items-start gap-12 pb-20 md:pb-0 min-[960px]:grid-cols-[minmax(0,1fr)_380px]">
+    <div className="grid items-start gap-4 pb-28 md:gap-12 md:pb-0 min-[960px]:grid-cols-[minmax(0,1fr)_380px]">
       <form
         id={formId}
         onSubmit={onSubmit}
@@ -272,6 +272,8 @@ export function RequestForm({
       </div>
 
       <StickyActionBar
+        note="NO PAYMENT NOW · WE CALL WITHIN 24 HOURS"
+        metaBelow
         meta="PER PERSON"
         price={dep ? formatINR(dep.price) : "—"}
         form={formId}

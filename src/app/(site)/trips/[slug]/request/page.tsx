@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
@@ -41,18 +42,28 @@ export default async function RequestPage({ params, searchParams }: PageProps<"/
   );
 
   return (
-    <main className="page-container flex flex-1 flex-col gap-8 pt-8 pb-16">
-      <div className="flex flex-col gap-3">
-        <Breadcrumb
-          items={[
-            { label: "Trips", href: "/trips" },
-            { label: shortName(trip.name), href: `/trips/${trip.slug}` },
-            { label: "Request a seat" },
-          ]}
-        />
-        <Kicker>Request a seat · no payment now</Kicker>
-        <h1 className="m-0 type-h1">Request your seat</h1>
-        <p className="m-0 max-w-[56ch] type-body-l text-muted">
+    <main className="page-container flex flex-1 flex-col gap-4 pt-2 pb-16 md:gap-6 md:pt-8">
+      <Breadcrumb
+        className="hidden md:flex"
+        items={[
+          { label: "Trips", href: "/trips" },
+          { label: shortName(trip.name), href: `/trips/${trip.slug}` },
+          { label: "Request a seat" },
+        ]}
+      />
+      {/* Phone: one back link instead of the trail. */}
+      <Link
+        href={`/trips/${trip.slug}`}
+        className="inline-flex min-h-11 items-center gap-2 self-start font-mono text-[13px] font-semibold uppercase leading-none tracking-[0.06em] text-link underline decoration-[1.5px] underline-offset-4 md:hidden"
+      >
+        ← {shortName(trip.name)}
+      </Link>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          <Kicker>Request a seat · no payment now</Kicker>
+          <h1 className="m-0 type-h1">Request your seat</h1>
+        </div>
+        <p className="m-0 max-w-[52ch] type-body-l">
           Tell us who’s coming. We call within 24 hours to confirm. Nothing is paid until we’ve talked.
         </p>
       </div>

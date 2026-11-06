@@ -14,7 +14,7 @@ import {
 import { startYear } from "@/features/tours/mappers";
 import type { Departure } from "@/features/tours/types";
 import { cn } from "@/lib/cn";
-import { FEW_SEATS, formatINR, pad2, seatCaption } from "@/lib/format";
+import { FEW_SEATS, formatINR, formatTicketDate, pad2, seatCaption } from "@/lib/format";
 import { GroupPass } from "./group-pass";
 
 /*
@@ -187,6 +187,15 @@ export function PeakNote() {
       )}
     </p>
   );
+}
+
+/** "FRI 13 NOV" for itinerary day `day` (1-based) of the picked departure; follows the picker. */
+export function SelectedDayDate({ day }: { day: number }) {
+  const { selected } = useDepartureSelection();
+  if (!selected.startDate) return null;
+  const date = new Date(selected.startDate);
+  date.setUTCDate(date.getUTCDate() + day - 1);
+  return <>{formatTicketDate(date)}</>;
 }
 
 export function SelectedGroupPass({ from, to }: { from: string; to: string }) {

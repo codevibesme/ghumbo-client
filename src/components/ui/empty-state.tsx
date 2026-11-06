@@ -26,7 +26,7 @@ export function EmptyState({
         {icon}
       </span>
       <h3 className="m-0 type-h3">{title}</h3>
-      {children && <p className="m-0 max-w-[40ch] type-body text-muted">{children}</p>}
+      {children && <p className="m-0 max-w-[48ch] type-body text-muted">{children}</p>}
       {action}
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { RefreshCw, SearchX } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Kicker } from "@/components/ui/section-header";
 import { Stamp } from "@/components/ui/stamp";
+import { TextLink } from "@/components/ui/text-link";
 import { TearLine } from "@/components/ui/tear-line";
 import { buttonClasses } from "@/components/ui/variants";
 import { useMyRequest, useSignedInUser } from "@/features/account/hooks";
@@ -28,6 +30,13 @@ import { StatusTimeline } from "@/features/booking-requests/components/status-ti
 import type { UserBookingRequest } from "@/features/booking-requests/types";
 import { ApiError } from "@/lib/api";
 import { formatTicketDate } from "@/lib/format";
+import { roomsShort } from "@/features/booking-requests/rooms";
+
+/** "One room, twin sharing". */
+const roomsLine = (n: number) => {
+  const r = roomsShort(n);
+  return `${r[0].toUpperCase()}${r.slice(1)}, twin sharing`;
+};
 
 export function RequestDetail({ code }: { code: string }) {
   const user = useSignedInUser(`/my-trips/${encodeURIComponent(code)}`);
@@ -98,23 +107,32 @@ function RequestTicket({
   const estimate = Number(r.estimate);
   const perPerson = r.travelerCount > 0 ? estimate / r.travelerCount : estimate;
   const open = canWithdraw(r.status);
+  const photo = r.tripAsset?.type === "image" ? r.tripAsset : null;
 
   return (
     <>
       {children}
-      <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+      <div className="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center md:gap-6">
         <div className="flex min-w-0 flex-col gap-2">
           <Kicker>
-            Seat request · {r.destinationName} ·{" "}
-            <span className="whitespace-nowrap">updated {formatStamp(r.updatedAt)}</span>
+            <span className="md:hidden">{r.code}</span>
+            <span className="hidden md:inline">Seat request</span> ·{" "}
+            <span className="whitespace-nowrap">sent {formatStamp(r.createdAt)}</span>
           </Kicker>
           <h1 className="m-0 type-h1">{r.tripName}</h1>
-          <span className="mt-2 font-mono text-[15px] font-medium leading-[1.4] tracking-[0.02em]">
-            {dateRange(r)}
-            {length && ` · ${length}`}
+          {/* Phone: dates on one line, length on the next. */}
+          <span className="mt-2 font-mono text-[14px] font-medium leading-[1.5] tracking-[0.02em] md:text-[15px] md:leading-[1.4]">
+            <span className="whitespace-nowrap">{dateRange(r)}</span>
+            {length && (
+              <>
+                <span className="hidden md:inline"> · </span>
+                <br className="md:hidden" />
+                {length}
+              </>
+            )}
           </span>
         </div>
-        <div className="shrink-0 px-4 py-2">
+        <div className="shrink-0 px-1 pt-3 pb-1 md:px-4 md:py-2">
           {meta.stamp ? (
             <Stamp tone={meta.stamp}>{meta.label}</Stamp>
           ) : (
@@ -133,7 +151,10 @@ function RequestTicket({
                 Your request
               </h2>
               <dl className="m-0 grid gap-x-6 gap-y-5 md:grid-cols-2">
-                <Fact label="Travellers">{travellers(r.travelerCount)}</Fact>
+                <Fact label="Travellers">
+                  {travellers(r.travelerCount)}
+                  <span className="block font-normal">{roomsLine(r.travelerCount)}</span>
+                </Fact>
                 <Fact label="Departure">
                   {formatShortDate(r.startDate, { year: true })}
                   <span className="block font-normal">Back {formatShortDate(r.endDate)}</span>
@@ -177,19 +198,46 @@ function RequestTicket({
         </div>
 
         <aside className="flex flex-col gap-6 min-[60rem]:sticky min-[60rem]:top-6 min-[60rem]:self-start">
-          <div className="flex flex-col rounded-ticket border-[1.5px] border-line bg-card">
-            <div className="flex flex-col gap-1 px-5 py-4">
-              <span className="type-stub text-muted">Your departure</span>
-              <span className="type-h4">{r.tripName}</span>
-              <span className="type-small text-muted">{r.destinationName}</span>
+          {/* The trip ticket: cover photo, route line, dates, and a way back to the trip page. */}
+          <section aria-label="Trip" className="flex flex-col rounded-ticket border-[1.5px] border-line bg-card">
+            {photo && (
+              <span className="relative block aspect-[16/10] overflow-hidden rounded-t-[4.5px] border-b-[1.5px] border-line">
+                <Image
+                  src={photo.url}
+                  alt={photo.label ?? r.tripName}
+                  fill
+                  sizes="(min-width: 960px) 360px, 100vw"
+                  className="object-cover"
+                />
+              </span>
+            )}
+            <div className="flex flex-col gap-1.5 p-5">
+              <span className="type-stub text-muted">
+                {[r.destinationName, length].filter(Boolean).join(" · ")}
+              </span>
             </div>
             <TearLine />
-            <dl className="m-0 grid grid-cols-3 gap-3 px-5 py-4">
+            <dl className="m-0 grid grid-cols-3 gap-3 px-5 pt-4 pb-2">
               <StubFact label="Depart">{formatTicketDate(r.startDate)}</StubFact>
               <StubFact label="Return">{formatTicketDate(r.endDate)}</StubFact>
-              {length !== null && <StubFact label="Length">{length}</StubFact>}
+              {/* The canvas has Seats here; requests carry no seat count, and the length is in the route line. */}
+              {r.isPeak && (
+                <div className="flex flex-col items-start gap-1.5">
+                  <dt className="type-stub text-muted">Dates</dt>
+                  <dd className="m-0">
+                    <Badge tone="peak">Peak</Badge>
+                  </dd>
+                </div>
+              )}
             </dl>
-          </div>
+            {r.tripSlug && (
+              <div className="px-5 pb-2">
+                <TextLink href={`/trips/${r.tripSlug}`} className="inline-flex min-h-11 items-center">
+                  View trip page →
+                </TextLink>
+              </div>
+            )}
+          </section>
           <div className="flex flex-col gap-2 rounded-ticket border-[1.5px] border-line bg-card px-5 py-4">
             <span className="type-stub text-muted">Questions?</span>
             <a href="mailto:support@ghumbo.com" className="type-h4 text-link hover:text-red">

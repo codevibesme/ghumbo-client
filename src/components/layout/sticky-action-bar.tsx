@@ -14,6 +14,8 @@ export function StickyActionBar({
   form,
   disabled,
   label = "Request my seat →",
+  note,
+  metaBelow,
   className,
 }: {
   /** "SAT 26 DEC · 04 LEFT" */
@@ -21,29 +23,41 @@ export function StickyActionBar({
   /** "₹9,499" */
   price: string;
   label?: string;
+  /** One centred mono line above the row ("NO PAYMENT NOW · WE CALL WITHIN 24 HOURS"). */
+  note?: string;
+  /** Price first, meta under it ("₹7,799 / PER PERSON"), as on the request page. */
+  metaBelow?: boolean;
   className?: string;
 } & ({ href: string; form?: never; disabled?: never } | { form: string; href?: never; disabled?: boolean })) {
   const button = buttonClasses({ className: "flex-1 px-3" });
   return (
     <div
       className={cn(
-        "fixed inset-x-0 bottom-0 z-40 flex h-20 items-center gap-3 border-t-[1.5px] border-line bg-card px-4 py-3 md:hidden",
+        "fixed inset-x-0 bottom-0 z-40 flex flex-col gap-3 border-t-[1.5px] border-line bg-card px-4 md:hidden",
+        note ? "pt-3 pb-4" : "h-20 justify-center py-3",
         className,
       )}
     >
-      <span className="flex shrink-0 flex-col gap-1">
-        <span className="font-mono text-[11px] font-medium leading-none tracking-[0.08em] text-muted">{meta}</span>
-        <span className="text-[22px] font-extrabold leading-none [font-stretch:115%]">{price}</span>
-      </span>
-      {href !== undefined ? (
-        <Link href={href} className={button}>
-          {label}
-        </Link>
-      ) : (
-        <button type="submit" form={form} disabled={disabled} className={button}>
-          {label}
-        </button>
+      {note && (
+        <span className="text-center font-mono text-[11px] font-medium leading-none tracking-[0.04em] text-muted">
+          {note}
+        </span>
       )}
+      <div className="flex items-center gap-3">
+        <span className={cn("flex shrink-0 gap-1", metaBelow ? "flex-col-reverse gap-1.5" : "flex-col")}>
+          <span className="font-mono text-[11px] font-medium leading-none tracking-[0.08em] text-muted">{meta}</span>
+          <span className="text-[22px] font-extrabold leading-none tracking-[-0.02em] [font-stretch:115%]">{price}</span>
+        </span>
+        {href !== undefined ? (
+          <Link href={href} className={button}>
+            {label}
+          </Link>
+        ) : (
+          <button type="submit" form={form} disabled={disabled} className={button}>
+            {label}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

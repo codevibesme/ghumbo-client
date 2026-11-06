@@ -1,3 +1,5 @@
+import type { Asset } from "@/features/destinations/types";
+
 /** POST /booking-requests body. The trip comes from the departure; `userId` (from the session) and `status` are set by the backend. */
 export type CreateBookingRequest = {
   tripDepartureId: string;
@@ -37,7 +39,11 @@ export type UserBookingRequest = {
   updatedAt: string;
   travelerCount: number;
   tripName: string;
+  tripSlug: string;
+  /** The trip's cover photo, or null if it has none. */
+  tripAsset: Asset | null;
   destinationName: string;
+  isPeak: boolean;
   startDate: string;
   endDate: string;
   currency: string;

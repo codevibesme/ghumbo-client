@@ -78,6 +78,7 @@ export function toDeparture(d: TripDeparture, times?: { depart?: string; return?
     id: d.id,
     start: formatTicketDate(d.startDate),
     end: formatTicketDate(d.endDate, { year: true }),
+    startDate: d.startDate,
     price: Number(d.amount),
     peak: d.isPeak,
     seatsLeft: Math.max(d.capacity - d.bookedSeats, 0),

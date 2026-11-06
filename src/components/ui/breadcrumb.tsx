@@ -24,7 +24,7 @@ export function Breadcrumb({
             </span>
           )}
           {item.href ? (
-            <Link href={item.href} className="text-link underline-offset-[3px] hover:text-red hover:underline">
+            <Link href={item.href} className="text-link underline underline-offset-[3px] hover:text-red">
               {item.label}
             </Link>
           ) : (

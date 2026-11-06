@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 // T14 Profile & settings. Signed-in only; the user comes from the session.
 export default function ProfilePage() {
   return (
-    <main className="page-container flex flex-1 flex-col gap-8 pt-10 pb-16 md:pt-12 md:pb-24">
+    <main className="page-container flex flex-1 flex-col gap-4 pt-6 pb-10 md:gap-8 md:pt-12 md:pb-24">
       <ProfileDetails />
     </main>
   );

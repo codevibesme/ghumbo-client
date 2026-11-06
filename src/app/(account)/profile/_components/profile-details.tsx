@@ -51,7 +51,7 @@ export function ProfileDetails() {
             <section
               id="sign-out"
               aria-labelledby="sign-out-h"
-              className="flex scroll-mt-6 flex-wrap items-center justify-between gap-4 rounded-ticket border-[1.5px] border-line bg-card px-5 py-5 md:px-6"
+              className="flex scroll-mt-6 flex-wrap items-center justify-between gap-4 rounded-ticket border-[1.5px] border-line bg-card p-4 md:px-6 md:py-5"
             >
               <div className="flex min-w-0 flex-col gap-1">
                 <h2 id="sign-out-h" className="m-0 type-h4">
@@ -82,40 +82,42 @@ function TravellerCard({ user }: { user: User }) {
       aria-labelledby="details-h"
       className="flex scroll-mt-6 flex-col rounded-ticket border-[1.5px] border-line bg-card"
     >
-      <div className="flex items-center justify-between gap-3 rounded-t-[4.5px] bg-passport px-5 py-3.5 text-on-passport md:px-6">
+      <div className="flex items-center justify-between gap-3 rounded-t-[4.5px] bg-passport px-4 py-3.5 text-on-passport md:px-6">
         <h2 id="details-h" className="m-0 type-label font-semibold">
           Traveller card
         </h2>
         <Logo tone="stock" ground="var(--g-passport)" className="w-[104px]" />
       </div>
 
-      <div className="flex flex-col gap-6 p-5 md:flex-row md:items-start md:gap-8 md:p-6">
+      <div className="flex flex-col gap-4 p-4 md:flex-row md:items-start md:gap-8 md:p-6">
         <span
           aria-hidden
-          className="relative inline-flex h-36 w-30 shrink-0 items-center justify-center overflow-hidden rounded-ticket border-[1.5px] border-line bg-stock font-sans text-[44px] font-extrabold leading-none text-link [font-stretch:125%]"
+          className="relative inline-flex h-[115px] w-24 shrink-0 items-center justify-center overflow-hidden rounded-ticket border-[1.5px] border-line bg-stock font-sans text-[36px] font-extrabold md:h-36 md:w-30 md:text-[44px] leading-none text-link [font-stretch:125%]"
         >
-          {photo ? <Image src={photo} alt="" fill sizes="120px" className="object-cover" /> : letters}
+          {photo ? <Image src={photo} alt="" fill sizes="(min-width: 720px) 120px, 96px" className="object-cover" /> : letters}
         </span>
 
-        <dl className="m-0 grid min-w-0 flex-1 gap-x-6 gap-y-5 md:grid-cols-2">
+        <dl className="m-0 grid min-w-0 flex-1 grid-cols-2 gap-4 md:gap-x-6 md:gap-y-5">
           <CardFact label="First name">{user.firstName}</CardFact>
           <CardFact label="Last name">{user.lastName || <span className="font-normal text-muted">Not added</span>}</CardFact>
-          <CardFact label="Email">{user.email ?? <span className="font-normal text-muted">Not added</span>}</CardFact>
-          <CardFact label="Mobile">
+          <CardFact label="Email" wide>{user.email ?? <span className="font-normal text-muted">Not added</span>}</CardFact>
+          <CardFact label="Mobile" wide>
             {user.phone ? (
               <span className="font-mono text-[15px] font-medium">{formatPhone(user.phone)}</span>
             ) : (
               <span className="font-normal text-muted">Not added</span>
             )}
           </CardFact>
-          <CardFact label="Member since">{formatMonthYear(user.createdAt)}</CardFact>
+          <CardFact label="Member since">
+            <span className="font-mono text-[15px] font-medium uppercase">{formatMonthYear(user.createdAt)}</span>
+          </CardFact>
         </dl>
       </div>
 
       <TearLine />
       <div
         aria-hidden
-        className="overflow-hidden rounded-b-[4.5px] bg-stock px-5 pt-3 pb-3.5 font-mono text-[13px] font-medium leading-[1.6] tracking-[0.12em] whitespace-nowrap text-muted md:px-6"
+        className="overflow-hidden rounded-b-[4.5px] bg-stock px-4 pt-3 pb-3.5 font-mono text-[13px] font-medium leading-[1.6] tracking-[0.12em] whitespace-nowrap text-muted md:px-6"
       >
         {line1}
         <br />
@@ -127,7 +129,8 @@ function TravellerCard({ user }: { user: User }) {
 
 function CardFact({ label, wide, children }: { label: string; wide?: boolean; children: React.ReactNode }) {
   return (
-    <div className={wide ? "flex min-w-0 flex-col gap-1.5 md:col-span-2" : "flex min-w-0 flex-col gap-1.5"}>
+    // Phone: two columns, with email and mobile across both. Desktop: two columns throughout.
+    <div className={wide ? "col-span-2 flex min-w-0 flex-col gap-1.5 md:col-span-1" : "flex min-w-0 flex-col gap-1.5"}>
       <dt className="type-stub text-muted">{label}</dt>
       <dd className="m-0 break-words text-[16px] font-semibold leading-[1.35]">{children}</dd>
     </div>

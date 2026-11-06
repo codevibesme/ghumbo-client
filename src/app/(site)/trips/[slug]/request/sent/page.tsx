@@ -47,10 +47,10 @@ export default async function SentPage({ params }: PageProps<"/trips/[slug]/requ
       <SentRequestView tripSlug={slug} tripName={data.trip.name} departures={data.departures}>
         <section aria-labelledby="h-next" className="flex flex-col gap-6">
           <SectionHeader kicker="No payment yet" title={<span id="h-next">What happens next</span>} />
-          <ol className="m-0 grid list-none gap-6 p-0 md:grid-cols-3">
+          <ol className="m-0 grid list-none gap-4 p-0 md:grid-cols-3 md:gap-6">
             {nextSteps(data.ends.from).map((s, i) => (
-              <li key={s.title} className="ticket-surface flex flex-col gap-2 p-5">
-                <span className="text-[36px] font-extrabold leading-none text-link [font-stretch:115%]">{pad2(i + 1)}</span>
+              <li key={s.title} className="ticket-surface flex flex-col gap-2 p-4 md:p-5">
+                <span className="text-[30px] font-extrabold leading-none text-link md:text-[36px] [font-stretch:115%]">{pad2(i + 1)}</span>
                 <span className="pt-1 type-label text-red">{s.when}</span>
                 <h3 className="m-0 type-h3">{s.title}</h3>
                 <p className="m-0 text-[14px] leading-[1.45] text-muted">{s.body}</p>

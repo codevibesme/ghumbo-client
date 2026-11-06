@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { authPhoto } from "@/features/auth/auth-photo";
+import { AuthPhotoStrip } from "@/features/auth/components/auth-art";
 import { Kicker } from "@/components/ui/section-header";
 import { SignInForm } from "@/features/auth/components/sign-in-form";
 import { safeNext } from "@/features/auth/lib";
@@ -9,9 +11,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function SignInPage({ searchParams }: PageProps<"/sign-in">) {
+export default async function SignInPage({ searchParams }: PageProps<"/sign-in">) {
+  const photo = await authPhoto();
   return (
     <>
+      <AuthPhotoStrip photo={photo} />
       <header className="flex flex-col gap-2">
         <Kicker className="leading-[1.3]">Step 1 of 2 · Sign in or sign up</Kicker>
         <h1 className="m-0 type-h1">Your trips, one&nbsp;ticket.</h1>

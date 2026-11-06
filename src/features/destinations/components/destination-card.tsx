@@ -50,6 +50,7 @@ export function DestinationTicket({
   name,
   blurb,
   badge,
+  badgeTone = "open",
   image,
   facts,
   priceLabel,
@@ -62,6 +63,8 @@ export function DestinationTicket({
   blurb: string;
   /** "Live · 9 trips" */
   badge: string;
+  /** "outline" for a coming-soon place. */
+  badgeTone?: "open" | "outline";
   image: { src: string; alt: string } | null;
   facts: { label: string; value: string; wide?: boolean }[];
   /** "9 trips · from, per person" */
@@ -80,8 +83,8 @@ export function DestinationTicket({
         )}
       </span>
       <TearLine />
-      <span className="flex flex-1 flex-col gap-3 px-6 pt-5 pb-6">
-        <Badge tone="open">{badge}</Badge>
+      <span className="flex flex-1 flex-col gap-3 px-4 pt-5 pb-5 md:px-6 md:pb-6">
+        <Badge tone={badgeTone}>{badge}</Badge>
         <h3 className="m-0 text-[28px] font-extrabold leading-[1.05] tracking-[-0.02em] [font-stretch:125%]">{name}</h3>
         <p className="m-0 type-body text-muted">{blurb}</p>
         {facts.length > 0 && (

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/layout/logo";
-import { Badge, StatusBadge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/badge";
 import { Kicker } from "@/components/ui/section-header";
 import { RoundStamp } from "@/components/ui/stamp";
 import { TearLine } from "@/components/ui/tear-line";
@@ -58,7 +58,7 @@ export function SentRequestView({
           <span className="font-mono text-[12px] font-semibold leading-none tracking-[0.08em]">SEAT REQUEST</span>
           <Logo tone="stock" ground="var(--g-passport)" className="w-[96px]" />
         </div>
-        <div className="flex flex-wrap items-center gap-x-10 gap-y-6 p-5 md:p-8">
+        <div className="flex flex-wrap items-center gap-x-10 gap-y-6 px-4 py-6 md:p-8">
           {dep && (
             <div className="flex flex-none justify-center p-3">
               <RoundStamp top="Request sent" middle={dep.start.replace(/^\w+ /, "")} bottom={sent.code} />
@@ -78,7 +78,7 @@ export function SentRequestView({
             <div className="flex flex-wrap items-end gap-x-6 gap-y-2">
               <span className="flex flex-col gap-2">
                 <span className={label}>Your reference</span>
-                <span className="font-mono text-[28px] font-semibold leading-none tracking-[0.02em]">{sent.code}</span>
+                <span className="font-mono text-[24px] font-semibold leading-none tracking-[0.02em] md:text-[28px]">{sent.code}</span>
               </span>
               <span className="pb-0.5 font-mono text-[12px] font-medium leading-[1.2] tracking-[0.08em] text-muted">
                 SENT {sentStamp(sent.sentAt)}
@@ -87,7 +87,7 @@ export function SentRequestView({
           </div>
         </div>
         <TearLine />
-        <dl className="m-0 grid grid-cols-2 gap-x-6 gap-y-5 px-5 pt-6 pb-8 md:grid-cols-3 md:px-8">
+        <dl className="m-0 grid grid-cols-2 gap-x-6 gap-y-5 px-4 py-6 md:grid-cols-3 md:px-8 md:pb-8">
           <div className={`${field} col-span-2 md:col-span-1`}>
             <dt className={label}>Trip</dt>
             <dd className={text}>{tripName}</dd>
@@ -122,7 +122,6 @@ export function SentRequestView({
             <dt className={label}>Status</dt>
             <dd className="m-0 flex flex-wrap gap-1.5">
               <StatusBadge status="received" />
-              <Badge tone="outline">No payment yet</Badge>
             </dd>
           </div>
         </dl>
@@ -132,7 +131,7 @@ export function SentRequestView({
 
       <div className="flex flex-col gap-6">
         <section aria-label="Track your request" className="ticket-surface flex flex-col md:flex-row">
-          <div className="flex min-w-0 flex-1 flex-col justify-center gap-2 p-5 md:p-8">
+          <div className="flex min-w-0 flex-1 flex-col justify-center gap-2 px-4 py-5 md:p-8">
             <h2 className="m-0 type-h3">Follow it from your phone</h2>
             <p className="m-0 type-body text-muted">
               Sign in or create an account with {sent.email} to track it. Every status change shows up in My trips.
@@ -140,7 +139,7 @@ export function SentRequestView({
           </div>
           <TearLine orientation="vertical" className="hidden md:block" />
           <TearLine className="md:hidden" />
-          <div className="flex flex-col justify-center gap-3 p-5 md:w-[340px] md:flex-none md:p-8">
+          <div className="flex flex-col justify-center gap-3 px-4 py-5 md:w-[340px] md:flex-none md:p-8">
             <Link href="/my-trips" className={buttonClasses({ fullWidth: true })}>
               Track it in My trips →
             </Link>

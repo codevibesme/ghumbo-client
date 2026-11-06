@@ -1,4 +1,4 @@
-import { CalendarDays, MapPin, MessageSquareText, UsersRound } from "lucide-react";
+import { Calendar, CalendarDays, MapPin, Star, Users } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { CSSProperties } from "react";
@@ -8,12 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SectionHeader } from "@/components/ui/section-header";
+import { TearLine } from "@/components/ui/tear-line";
 import { TextLink } from "@/components/ui/text-link";
-import { destinationHref } from "@/features/destinations/lib";
+import { buttonClasses } from "@/components/ui/variants";
+import { destinationHref, summary } from "@/features/destinations/lib";
 import { getAllTrips, getReviews, getTripsByDestination } from "@/features/tours/api";
 import {
   DepartureSelectionProvider,
   PeakNote,
+  SelectedDayDate,
   SelectedDeparturePicker,
   SelectedFares,
   SelectedGroupPass,
@@ -110,7 +113,8 @@ async function TripView({ data }: { data: TripPageData }) {
           >
             <section aria-labelledby="h-over" className={`${left} flex flex-col gap-6`}>
               <SectionHeader kicker="The trip" title={<span id="h-over">{`${days} days in ${shortName(trip.name)}, all planned`}</span>} />
-              <p className="m-0 max-w-[68ch] type-body-l">{trip.overview}</p>
+              {/* The design's intro is two sentences; the full overview is in the JSON-LD description. */}
+              <p className="m-0 max-w-[52ch] type-body-l">{summary(trip.overview)}</p>
               {ends.stops.length > 1 && (
                 <div className="ticket-surface px-5 py-[18px]">
                   <RouteLine stops={ends.stops} />
@@ -163,6 +167,7 @@ async function TripView({ data }: { data: TripPageData }) {
                     key={day.day}
                     day={`Day ${pad2(day.day)}`}
                     title={day.title}
+                    date={hasPass ? <SelectedDayDate day={day.day} /> : undefined}
                     activities={activities[i]}
                     meals={mealsLine(day)}
                     stay={day.accommodation ?? "No stay"}
@@ -174,7 +179,7 @@ async function TripView({ data }: { data: TripPageData }) {
             {hasInclusions && (
               <section aria-labelledby="h-incl" className={`${left} flex flex-col gap-6`}>
                 <SectionHeader kicker="Included / not included" title={<span id="h-incl">What’s in the ticket</span>} />
-                <div className="grid gap-8 md:grid-cols-2">
+                <div className="ticket-surface grid gap-x-8 gap-y-4 px-5 pt-3.5 pb-2.5 md:grid-cols-2">
                   <InclusionList title="Included" kind="included" items={trip.inclusions.map((i) => ({ title: i.title, note: i.description }))} />
                   <InclusionList title="Not included" kind="excluded" items={trip.exclusions.map((i) => ({ title: i.title, note: i.description }))} />
                 </div>
@@ -224,26 +229,31 @@ function TripHeader({
 }) {
   const destination = place?.destination;
   return (
-    <section className="page-container flex flex-col gap-4 pt-8 pb-6">
+    <section className="page-container flex flex-col gap-6 pt-8 pb-6">
       <Breadcrumb items={crumbs.map((c, i) => ({ label: c.name, href: i < crumbs.length - 1 ? c.path : undefined }))} />
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="type-label text-red">
-          {[ends.from && ends.to ? `${ends.from} → ${ends.to}` : null, destination?.name].filter(Boolean).join(" · ")}
-        </span>
-        {trip.isRecommended && <Badge tone="pick">Ghumbo pick</Badge>}
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="type-label text-red">
+            {[ends.from && ends.to ? `${ends.from} → ${ends.to}` : null, destination?.name].filter(Boolean).join(" · ")}
+          </span>
+          {trip.isRecommended && <Badge tone="pick">Ghumbo pick</Badge>}
+        </div>
+        <h1 className="m-0 text-[clamp(36px,4.5vw,56px)] font-extrabold leading-none tracking-[-0.02em] [font-stretch:125%]">
+          {trip.name}
+        </h1>
       </div>
-      <h1 className="m-0 max-w-[20ch] type-h1">{trip.name}</h1>
-      <ul className="m-0 flex list-none flex-wrap gap-x-6 gap-y-2 p-0 type-label text-ink">
+      <ul className="m-0 flex list-none flex-wrap gap-x-7 gap-y-3 p-0 type-label text-ink">
         <li className="flex items-center gap-2">
-          <CalendarDays size={16} aria-hidden /> {trip.durationDays} days, {trip.durationNights} nights
+          <Calendar size={20} strokeWidth={1.75} aria-hidden className="text-link" /> {trip.durationDays} days,{" "}
+          {trip.durationNights} nights
         </li>
         {ends.from && (
           <li className="flex items-center gap-2">
-            <MapPin size={16} aria-hidden /> From {ends.from}
+            <MapPin size={20} strokeWidth={1.75} aria-hidden className="text-link" /> From {ends.from}
           </li>
         )}
         <li className="flex items-center gap-2">
-          <UsersRound size={16} aria-hidden /> Group of up to {capacity}
+          <Users size={20} strokeWidth={1.75} aria-hidden className="text-link" /> Group of up to {capacity}
         </li>
       </ul>
     </section>
@@ -255,19 +265,24 @@ function MeetingPoint({ ends, lastDay, className }: { ends: TripPageData["ends"]
   return (
     <section className={`flex flex-col gap-6 ${className}`}>
       <SectionHeader kicker="Meeting point & end point" title="Where we meet" />
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="ticket-surface flex flex-col gap-2 px-5 py-[18px]">
-          <span className="type-stub text-muted">Start · Day 1{ends.pickupTime && ` · pickup ${ends.pickupTime}`}</span>
-          <h3 className="m-0 type-h3">{ends.from}</h3>
+      {/* One ticket, start and end either side of a tear (stacked on phones), as on the design. */}
+      <div className="ticket-surface flex flex-col md:flex-row">
+        <div className="flex min-w-0 flex-1 flex-col gap-2 p-5">
+          <span className="type-label text-link">Start · Day 1{ends.pickupTime && ` · pickup ${ends.pickupTime}`}</span>
+          <h3 className="m-0 text-[18px] font-bold leading-[1.3] [font-stretch:110%]">{ends.from}</h3>
         </div>
         {ends.dropLocation && (
-          <div className="ticket-surface flex flex-col gap-2 px-5 py-[18px]">
-            <span className="type-stub text-muted">
-              End · Day {lastDay}
-              {ends.dropTime && ` · drop ${ends.dropTime}`}
-            </span>
-            <h3 className="m-0 type-h3">{ends.dropLocation}</h3>
-          </div>
+          <>
+            <TearLine className="md:hidden" />
+            <TearLine orientation="vertical" className="hidden md:block" />
+            <div className="flex min-w-0 flex-1 flex-col gap-2 p-5">
+              <span className="type-label text-red">
+                End · Day {lastDay}
+                {ends.dropTime && ` · drop ${ends.dropTime}`}
+              </span>
+              <h3 className="m-0 text-[18px] font-bold leading-[1.3] [font-stretch:110%]">{ends.dropLocation}</h3>
+            </div>
+          </>
         )}
       </div>
     </section>
@@ -286,9 +301,15 @@ function Reviews({ reviews, next, className }: { reviews: TripReview[]; next: De
         </ul>
       ) : (
         <EmptyState
-          icon={<MessageSquareText size={24} aria-hidden />}
+          icon={<Star size={24} strokeWidth={1.75} aria-hidden />}
           title="No reviews yet"
-          action={next ? <TextLink href="#departures">See departures</TextLink> : undefined}
+          action={
+            next ? (
+              <a href="#departures" className={buttonClasses({ variant: "secondary", size: "m" })}>
+                See departures
+              </a>
+            ) : undefined
+          }
         >
           {next
             ? `This trip’s next group leaves ${next.start}. Reviews open when they’re back, and only travellers can write one.`

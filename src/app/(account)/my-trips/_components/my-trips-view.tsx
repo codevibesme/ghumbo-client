@@ -37,7 +37,7 @@ export function MyTripsView() {
 
   return (
     <>
-      <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
+      <div className="flex flex-col items-start justify-between gap-2 md:flex-row md:items-end md:gap-4">
         <div className="flex flex-col gap-2">
           <Kicker>{user ? `Passenger · ${fullName(user)}` : "Passenger"}</Kicker>
           <h1 className="m-0 type-h1">My trips</h1>

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { TearLine } from "@/components/ui/tear-line";
 import type { Activity } from "@/features/tours/types";
@@ -22,7 +23,7 @@ export function ItineraryDay({
   day: string;
   title: string;
   /** "SUN 27 DEC" */
-  date?: string;
+  date?: ReactNode;
   activities: Activity[];
   meals?: string;
   stay?: string;

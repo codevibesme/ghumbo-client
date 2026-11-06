@@ -26,10 +26,16 @@ export default async function Home() {
   const pick = listable.find((t) => t.isRecommended);
   const heroTrip = pick ?? listable[0];
 
-  // Destination cards: live places, with their trips grouped from the one catalog request.
+  // Destination cards: live places, with their trips grouped from the one catalog request, then coming-soon ones.
   const liveCountries = countries.filter((c) => c.status === "live");
-  const destinations = (await Promise.all(liveCountries.map((c) => getDestinations(countrySlug(c))))).flat();
-  const places = destinations.map((d) => ({ destination: d, trips: trips.filter((t) => t.destination?.slug === d.slug) }));
+  const [destinations, soon] = await Promise.all([
+    Promise.all(liveCountries.map((c) => getDestinations(countrySlug(c)))).then((d) => d.flat()),
+    Promise.all(liveCountries.map((c) => getDestinations(countrySlug(c), "coming_soon"))).then((d) => d.flat()),
+  ]);
+  // Busiest place first, as on the design (West Bengal, then Andaman).
+  const places = destinations
+    .map((d) => ({ destination: d, trips: trips.filter((t) => t.destination?.slug === d.slug) }))
+    .toSorted((a, b) => b.trips.length - a.trips.length);
 
   const months = [...new Set(listable.map((t) => t.nextDeparture.startDate.slice(0, 7)))]
     .sort()
@@ -41,10 +47,10 @@ export default async function Home() {
         <div className="flex min-w-0 flex-[999_1_560px] flex-col">
           <span className="type-label text-red">Just show up{priceFrom !== null && ` · from ${formatINR(priceFrom)}`}</span>
           <h1 className="m-0 mt-2 flex flex-col gap-3">
-            <span className="text-[clamp(44px,6.4vw,88px)] font-extrabold leading-[0.95] tracking-[-0.02em] [font-stretch:125%]">
+            <span className="text-[clamp(44px,6.4vw,88px)] font-extrabold leading-[0.95] tracking-[-0.03em] [font-stretch:125%]">
               Group trips across India,
             </span>
-            <span className="text-[clamp(28px,3vw,40px)] font-extrabold leading-none tracking-[-0.01em] [font-stretch:125%]">
+            <span className="text-[clamp(28px,3vw,40px)] font-extrabold leading-[1.05] tracking-[-0.02em] [font-stretch:125%]">
               on fixed dates.
             </span>
           </h1>
@@ -89,7 +95,7 @@ export default async function Home() {
       </section>
 
       {boardRows.length > 0 && (
-        <section className="page-container py-10">
+        <section className="page-container py-7 md:py-10">
           <DepartureBoard
             title="Leaving soon"
             action={
@@ -104,7 +110,7 @@ export default async function Home() {
       )}
 
       {places.length > 0 && (
-        <section className="page-container flex flex-col gap-6 py-10">
+        <section className="page-container flex flex-col gap-6 py-7 md:py-10">
           <SectionHeader kicker="Destinations" title="Where we go" action={<TextLink href="/destinations">All destinations →</TextLink>} />
           <div className="grid grid-cols-[repeat(auto-fill,minmax(min(320px,100%),1fr))] gap-6">
             {places.map(({ destination, trips: placeTrips }) => {
@@ -127,6 +133,22 @@ export default async function Home() {
                 />
               );
             })}
+            {/* The design's waitlist card; there's no waitlist yet, so it opens the coming-soon page (T05). */}
+            {soon.map((d) => (
+              <DestinationTicket
+                key={d.id}
+                href={destinationHref(d)}
+                name={d.name}
+                blurb={firstSentence(d.overview)}
+                badge="Opening soon"
+                badgeTone="outline"
+                image={null}
+                facts={[{ label: "Trips", value: "Dates soon" }]}
+                priceLabel="First departures"
+                price="Dates soon"
+                cta={`See ${d.name} →`}
+              />
+            ))}
           </div>
         </section>
       )}

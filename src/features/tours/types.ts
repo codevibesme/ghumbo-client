@@ -25,6 +25,8 @@ export type Departure = {
   start: string;
   /** "TUE 29 DEC 2026" */
   end: string;
+  /** ISO start date, for dating each itinerary day. */
+  startDate?: string;
   price: number;
   seatsLeft: number;
   totalSeats: number;

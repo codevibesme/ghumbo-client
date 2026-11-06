@@ -161,7 +161,28 @@
   --color-stamp-backing: var(--g-stamp-backing);
 
   --font-sans: var(--font-archivo), system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --font-mono: "Ghumbo Mono Arrows", var(--font-plex-mono), ui-monospace, monospace;
+}
+
+/*
+ * Plex Mono's latin subset has no arrows (→ is U+2192), so next/font's
+ * metric-adjusted Arial fallback drew a long Arial arrow in every date range.
+ * These faces cover arrows only, from the system monospace, as on the canvas.
+ * local() needs full face names ("Menlo Regular"), not family names.
+ */
+@font-face {
+  font-family: "Ghumbo Mono Arrows";
+  font-weight: 400 500;
+  src: local("Menlo Regular"), local("Menlo-Regular"), local("Consolas"), local("DejaVu Sans Mono"),
+    local("Courier New");
+  unicode-range: U+2190-21FF;
+}
+@font-face {
+  font-family: "Ghumbo Mono Arrows";
+  font-weight: 600 800;
+  src: local("Menlo Bold"), local("Menlo-Bold"), local("Consolas Bold"), local("DejaVu Sans Mono Bold"),
+    local("Courier New Bold");
+  unicode-range: U+2190-21FF;
 }
 
 @theme {
