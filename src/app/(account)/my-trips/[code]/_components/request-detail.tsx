@@ -123,7 +123,7 @@ function RequestTicket({
           {/* Phone: dates on one line, length on the next. */}
           <span className="mt-2 font-mono text-[14px] font-medium leading-[1.5] tracking-[0.02em] md:text-[15px] md:leading-[1.4]">
             <span className="whitespace-nowrap">{dateRange(r)}</span>
-            {length && (
+            {length !== null && (
               <>
                 <span className="hidden md:inline"> · </span>
                 <br className="md:hidden" />
