@@ -85,7 +85,7 @@ const sections: LegalSection[] = [
         </div>
         <ul>
           <li>
-            Percentages are of the trip cost for the seats you cancel, GST included. We don’t add any other fee.
+            Percentages are of the trip cost for the seats you cancel, taxes included. We don’t add any other fee.
           </li>
           <li>
             Days are counted to the first day of the trip, from the day we receive your cancellation in writing: email{" "}
@@ -174,7 +174,7 @@ const sections: LegalSection[] = [
           To the same account, card or UPI ID you paid from, within {REFUND_WORKING_DAYS} working days of the
           cancellation being confirmed. Your bank may take a few more days to show it.
         </li>
-        <li>The GST on the refunded amount is refunded too, and we send you a credit note.</li>
+        <li>Any tax you paid on the refunded amount is refunded too.</li>
         <li>We never refund to a different person’s account, and never ask for your OTP or card details to do it.</li>
       </ul>
     ),

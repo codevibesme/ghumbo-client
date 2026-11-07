@@ -44,7 +44,7 @@ const STEPS: { kicker: string; title: string; body: string; points: string[]; no
     title: "Choose a trip and a fixed date",
     body: "Every trip leaves on set dates with a set plan. Each departure shows the price and how many seats are left in the group.",
     points: [
-      "Prices are per person, twin sharing, GST included",
+      "Prices are per person, twin sharing, taxes included",
       "Couples share a room (ask for a double bed) and pay per person",
       "Peak dates (Christmas week, May holidays) cost more",
     ],

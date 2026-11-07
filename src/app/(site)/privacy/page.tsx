@@ -29,7 +29,7 @@ const DATA: { what: ReactNode; why: string }[] = [
   },
   {
     what: "Payments: the amount, date, method (for example UPI) and the payment provider’s reference",
-    why: "To confirm your seat, issue GST invoices and make refunds. Card numbers, bank logins and UPI PINs stay with the payment provider; we never see them.",
+    why: "To confirm your seat, issue invoices and make refunds. Card numbers, bank logins and UPI PINs stay with the payment provider; we never see them.",
   },
   {
     what: "What you tell us on calls, like room sharing or food needs",

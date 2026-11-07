@@ -134,7 +134,7 @@ async function TripView({ data }: { data: TripPageData }) {
                   <PeakNote />
                   <SelectedFares className="md:hidden" />
                   <p className="m-0 font-mono text-[12px] font-medium leading-[1.4] tracking-[0.04em] text-muted">
-                    PER PERSON, TWIN SHARING · GST INCLUDED · EACH SQUARE IS ONE SEAT IN A GROUP OF {capacity}
+                    PER PERSON, TWIN SHARING · TAXES INCLUDED · EACH SQUARE IS ONE SEAT IN A GROUP OF {capacity}
                   </p>
                   <SeatLegend />
                 </div>

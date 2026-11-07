@@ -417,7 +417,7 @@ function RequestSummary({
         <SummaryRow label="Estimate" value={departure ? `≈ ${formatINR(departure.price * travelers)}` : "—"} />
       </dl>
       <p className="m-0 px-5 pb-4 font-mono text-[12px] font-medium leading-[1.4] tracking-[0.04em] text-muted">
-        PER PERSON, TWIN SHARING · GST INCLUDED · FINAL AMOUNT CONFIRMED ON THE CALL
+        PER PERSON, TWIN SHARING · TAXES INCLUDED · FINAL AMOUNT CONFIRMED ON THE CALL
       </p>
     </aside>
   );

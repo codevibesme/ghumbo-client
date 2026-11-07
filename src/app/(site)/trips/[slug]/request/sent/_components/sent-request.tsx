@@ -112,7 +112,7 @@ export function SentRequestView({
           {dep && (
             <div className={field}>
               <dt className={label}>Estimate</dt>
-              <dd className={text}>≈ {formatINR(dep.price * sent.travelers)} · GST included</dd>
+              <dd className={text}>≈ {formatINR(dep.price * sent.travelers)} · taxes included</dd>
             </div>
           )}
           {sent.phone && (

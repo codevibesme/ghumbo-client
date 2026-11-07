@@ -248,7 +248,7 @@ async function DestinationView({ destination, country }: { destination: Destinat
               icon={<IndianRupee size={18} aria-hidden />}
               label="Trips from"
               value={formatINR(stats.priceFrom)}
-              note="Per person, twin sharing, GST included."
+              note="Per person, twin sharing, taxes included."
             />
           )}
           {range && (

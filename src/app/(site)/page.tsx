@@ -104,7 +104,7 @@ export default async function Home() {
               </TextLink>
             }
             rows={boardRows}
-            footnote="PER PERSON, TWIN SHARING · GST INCLUDED · SEATS UPDATE LIVE"
+            footnote="PER PERSON, TWIN SHARING · TAXES INCLUDED · SEATS UPDATE LIVE"
           />
         </section>
       )}

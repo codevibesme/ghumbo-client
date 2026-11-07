@@ -69,14 +69,14 @@ const sections: LegalSection[] = [
     body: (
       <ul>
         <li>
-          Prices are per person, twin sharing, and include GST. The estimate you see when you request a seat can change
+          Prices are per person, twin sharing, and include all taxes. The estimate you see when you request a seat can change
           before you pay; the amount on your payment link is final.
         </li>
         <li>
           You pay {business.name} only, through the secure link from billing@mail.ghumbo.com. We never ask you to pay a
           personal account, and never ask for an OTP, card details or a UPI PIN over the phone or chat.
         </li>
-        <li>We send a GST invoice for every payment.</li>
+        <li>We send an invoice for every payment.</li>
       </ul>
     ),
   },

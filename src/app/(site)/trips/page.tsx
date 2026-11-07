@@ -18,7 +18,7 @@ import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = {
   title: "All group trips",
-  description: "Every Ghumbo group trip on fixed dates: groups of up to 18, prices per person, twin sharing, GST included.",
+  description: "Every Ghumbo group trip on fixed dates: groups of up to 18, prices per person, twin sharing, taxes included.",
   alternates: { canonical: "/trips" },
 };
 
@@ -210,9 +210,9 @@ function TripsBoard({ trips, catalog, filters }: { trips: TripListItem[] | null;
           {countLine(trips, shown.length, filters, filterCount)}
         </p>
         <p className="m-0 mt-1 max-w-[68ch] type-small text-muted md:mt-2">
-          <span className="md:hidden">All live destinations. Per person, twin sharing, GST included.</span>
+          <span className="md:hidden">All live destinations. Per person, twin sharing, taxes included.</span>
           <span className="hidden md:inline">
-            Showing every live destination. Fixed dates, groups of up to 18; prices are per person, twin sharing, GST
+            Showing every live destination. Fixed dates, groups of up to 18; prices are per person, twin sharing, taxes
             included.
           </span>
         </p>

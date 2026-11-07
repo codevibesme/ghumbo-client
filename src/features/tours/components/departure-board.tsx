@@ -20,7 +20,7 @@ export function DepartureBoard({
   title,
   action,
   rows,
-  footnote = "PER PERSON, TWIN SHARING · GST INCLUDED",
+  footnote = "PER PERSON, TWIN SHARING · TAXES INCLUDED",
   className,
 }: {
   title: ReactNode;

@@ -11,6 +11,7 @@ const fromEnv = (value: string | undefined, fallback: string) => value?.trim() |
 export const business = {
   name: fromEnv(process.env.NEXT_PUBLIC_GHUMBO_COMPANY_NAME, "Ghumbo"),
   address: fromEnv(process.env.NEXT_PUBLIC_GHUMBO_ADDRESS, "Kolkata, West Bengal, India"),
+  /** Not GST-registered yet; set NEXT_PUBLIC_GHUMBO_GSTIN once it is and the pages print it. */
   gstin: process.env.NEXT_PUBLIC_GHUMBO_GSTIN?.trim() || null,
   founder: fromEnv(process.env.NEXT_PUBLIC_GHUMBO_FOUNDER_NAME, "Our founder"),
 };
