@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Archivo, IBM_Plex_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
+import { JsonLd } from "@/components/seo/json-ld";
+import { siteLd } from "@/config/seo";
 import { ThemeScript } from "@/features/theme/theme-script";
 
 import "./globals.css";
@@ -26,6 +28,10 @@ export const metadata: Metadata = {
   },
   description:
     "Fixed-departure group trips for 20–35 year-olds. Pick a date, request a seat, we call you within 24 hours. First stop: West Bengal.",
+  applicationName: "Ghumbo",
+  openGraph: { type: "website", siteName: "Ghumbo", locale: "en_IN" },
+  twitter: { card: "summary_large_image" },
+  robots: { index: true, follow: true, "max-image-preview": "large" },
 };
 
 export const viewport: Viewport = {
@@ -42,6 +48,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ThemeScript />
       </head>
       <body className="flex min-h-dvh flex-col">
+        <JsonLd data={siteLd()} />
         <Providers>{children}</Providers>
       </body>
     </html>

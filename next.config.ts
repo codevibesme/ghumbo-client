@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { AI_BOTS, NEXT_DEFAULT_HTML_LIMITED_BOTS } from "./src/config/seo-bots";
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -7,6 +8,9 @@ const nextConfig: NextConfig = {
     agentUpgrade: "security",
   },
   cacheComponents: true,
+  // AI answer engines don't run JS and read <head> only: give them blocking
+  // metadata like Google and Bing get (docs/seo-geo-guidelines.md §1).
+  htmlLimitedBots: new RegExp(`${NEXT_DEFAULT_HTML_LIMITED_BOTS}|${AI_BOTS.join("|")}`, "i"),
   images: {
     // Catalog photos: our CDN (CC-licensed Commons photos are mirrored there, credits kept in the asset).
     // Profile photos: Google's, saved on sign-up with Google.

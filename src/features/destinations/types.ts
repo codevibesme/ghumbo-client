@@ -28,4 +28,6 @@ export type Destination = {
   slug: string;
   overview: string;
   assets: Asset[];
+  /** ISO timestamp of the last edit. */
+  updatedAt: string;
 };
