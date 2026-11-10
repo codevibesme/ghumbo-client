@@ -10,14 +10,16 @@ const LEGACY_UA = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/534.30 (KHTML, like 
 
 async function googleFont(family: string, text?: string) {
   const query = `family=${family}${text ? `&text=${encodeURIComponent(text)}` : ""}`;
-  const css = await (
-    await fetch(`https://fonts.googleapis.com/css2?${query}`, { headers: { "user-agent": LEGACY_UA } })
-  ).text();
+  const cssRes = await fetch(`https://fonts.googleapis.com/css2?${query}`, { headers: { "user-agent": LEGACY_UA } });
+  if (!cssRes.ok) throw new Error(`Google Fonts CSS ${cssRes.status} for ${family}`);
+  const css = await cssRes.text();
   // Google splits a family into per-script subsets; take "latin", or the only one for a text= subset.
   const block = css.split("/* latin */")[1] ?? css;
   const url = /src: url\((.+?)\) format\('(?:woff|truetype|opentype)'\)/.exec(block)?.[1];
   if (!url) throw new Error(`No font file for ${family}`);
-  return (await fetch(url)).arrayBuffer();
+  const fontRes = await fetch(url);
+  if (!fontRes.ok) throw new Error(`Font file ${fontRes.status} for ${family}`);
+  return fontRes.arrayBuffer();
 }
 
 /**
