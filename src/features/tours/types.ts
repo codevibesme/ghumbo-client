@@ -121,6 +121,8 @@ export type Trip = {
   exclusions: { title: string; description: string }[];
   assets: Asset[];
   isRecommended: boolean;
+  /** ISO timestamp of the trip row's last edit (not its departures'). */
+  updatedAt: string;
 };
 
 /** GET /departures/trip/:tripId item. One per-person price; `amount` is a numeric string ("7799.00"). */

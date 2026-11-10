@@ -64,10 +64,12 @@ export async function generateMetadata({ params }: PageProps<"/destinations/[slu
   }
   const trips = await getTripsByDestination(slug);
   const stats = tripStats(trips);
+  const cover = place.destination.assets[0];
   return {
     title: `${place.destination.name} group trips${stats.count ? ` · ${stats.count} trips${stats.priceFrom ? ` from ${formatINR(stats.priceFrom)}` : ""}` : ""}`,
     description: place.destination.overview.slice(0, 157).replace(/\s\S*$/, "") + "…",
     alternates: { canonical: `/destinations/${slug}` },
+    openGraph: cover ? { images: [{ url: cover.url, alt: cover.label ?? place.destination.name }] } : undefined,
   };
 }
 

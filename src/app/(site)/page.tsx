@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { cacheLife } from "next/cache";
 import Image from "next/image";
 import { SectionHeader } from "@/components/ui/section-header";
@@ -11,6 +12,8 @@ import { DepartureBoard } from "@/features/tours/components/departure-board";
 import { isListable, monthLabel, toUpcomingBoardRow, vibeOptions } from "@/features/tours/mappers";
 import { formatINR, formatTicketDate } from "@/lib/format";
 import { BookingSteps, HeroSearch, WhyGhumbo } from "./_components/home-parts";
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 // T01 Home. Catalog data is cached, so the whole page prerenders.
 export default async function Home() {

@@ -11,6 +11,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { TearLine } from "@/components/ui/tear-line";
 import { TextLink } from "@/components/ui/text-link";
 import { buttonClasses } from "@/components/ui/variants";
+import { ORG_ID } from "@/config/seo";
 import { supportPhone } from "@/config/site";
 import { destinationHref, summary } from "@/features/destinations/lib";
 import { getAllTrips, getReviews, getTripsByDestination } from "@/features/tours/api";
@@ -383,6 +384,8 @@ function tripLd({ trip, departures, rawDepartures }: TripPageData, reviews: Trip
     description: trip.overview,
     image: trip.assets.map((a) => a.url),
     url: `https://ghumbo.com/trips/${trip.slug}`,
+    provider: { "@id": ORG_ID },
+    brand: { "@type": "Brand", name: "Ghumbo" },
     itinerary: {
       "@type": "ItemList",
       itemListElement: trip.itinerary.days.map((d) => ({ "@type": "ListItem", position: d.day, name: d.title })),
@@ -401,6 +404,7 @@ function tripLd({ trip, departures, rawDepartures }: TripPageData, reviews: Trip
       availabilityEnds: rawDepartures[i].endDate,
       inventoryLevel: { "@type": "QuantitativeValue", value: d.seatsLeft },
       url: `https://ghumbo.com/trips/${trip.slug}`,
+      seller: { "@id": ORG_ID },
     })),
     ...(rated && {
       aggregateRating: {
