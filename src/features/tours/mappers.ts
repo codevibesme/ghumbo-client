@@ -8,14 +8,14 @@ import type {
   TourSummary,
   Trip,
   TripDeparture,
+  TripHub,
   TripListItem,
   UpcomingDeparture,
 } from "./types";
 
 /*
- * Backend → UI shapes. Anything the design shows that the backend doesn't send
- * yet (peak dates, hub names, highlights, best time…) is derived where it can
- * be and left out where it can't; see the gaps list in the PR description.
+ * Backend → UI shapes. Hubs, stops, best time, highlights and the rest come
+ * from the trip; older rows without them fall back to what the itinerary says.
  */
 
 /** "Darjeeling: Queen of the Hills" → "Darjeeling", for breadcrumbs and short labels. */
@@ -42,12 +42,38 @@ export function isListable(t: TripListItem): t is TripListItem & {
   return Boolean(t.nextDeparture && t.startingPrice && t.asset);
 }
 
+/* ------------------------------------------------------------------ */
+/* Hubs                                                                */
+/* ------------------------------------------------------------------ */
+
+/** "NJP / IXB": the pass, card routes and the hero's "From". */
+export function hubCodes(hubs: TripHub[]) {
+  return hubs.map((h) => h.code || h.name).join(" / ");
+}
+
+/** "New Jalpaiguri Jn (NJP) or Bagdogra Airport (IXB)": the meeting point. */
+export function hubNames(hubs: TripHub[]) {
+  return hubs.map((h) => (h.code ? `${h.name} (${h.code})` : h.name)).join(" or ");
+}
+
+/** Route line: the pickup hubs, the stops between, the place the trip is based at. */
+function hubRoute(t: Pick<TripListItem, "sourceHubs" | "destinationHub" | "stops">) {
+  if (!t.sourceHubs?.length || !t.destinationHub) return null;
+  const from = hubCodes(t.sourceHubs);
+  const to = t.destinationHub.name;
+  return { from, to, stops: [...new Set([from, ...(t.stops ?? []), to])] };
+}
+
 export function toTourSummary(t: TripListItem): TourSummary | null {
   if (!isListable(t)) return null;
+  const hubs = hubRoute(t);
   return {
     href: tripHref(t.slug),
     title: t.name,
-    route: `${t.destination?.name ?? "India"} · ${duration(t.durationDays, t.durationNights)}`,
+    // "NJP / IXB → Darjeeling · 4D / 3N", or the destination before hubs were filled in.
+    route: `${hubs ? `${hubs.from} → ${hubs.to}` : (t.destination?.name ?? "India")} · ${duration(t.durationDays, t.durationNights)}`,
+    blurb: t.tagline || undefined,
+    stops: hubs && hubs.stops.length > 1 ? hubs.stops : undefined,
     image: { src: t.asset.url, alt: t.asset.label ?? t.name },
     nextDeparture: formatTicketDate(t.nextDeparture.startDate),
     seatsLeft: t.nextDeparture.seatsLeft,
@@ -112,9 +138,9 @@ function leg(location: string | null) {
 const isPlace = (l: string | null): l is string => Boolean(l) && !/[,/]| - /.test(l ?? "");
 
 /**
- * Pickup, drop and route stops, read off the itinerary until the backend has
- * explicit hub / stop fields. Nothing is invented: every stop is a location the
- * itinerary names.
+ * Pickup, drop and route stops. The hubs and stops come from the trip's own
+ * fields; pickup and drop times (and trips without hubs yet) are read off the
+ * itinerary. Nothing is invented: every stop is a location the itinerary names.
  *
  * - Start: day 1's opening transfer ("New Jalpaiguri / Bagdogra", or the origin
  *   of a leg like "Kolkata to Godkhali"). Trips that don't open with a transfer
@@ -155,8 +181,23 @@ export function tripEndpoints(trip: Trip) {
     stops = [...new Set([from, ...overnights])];
   }
 
+  const hubs = hubRoute(trip);
+  if (hubs) {
+    return {
+      from: hubs.from,
+      /** "New Jalpaiguri Jn (NJP) or Bagdogra Airport (IXB)" */
+      fromLong: hubNames(trip.sourceHubs),
+      pickupTime: open?.start_time ?? null,
+      dropTime: close?.end_time ?? close?.start_time ?? null,
+      dropLocation,
+      to: hubs.to,
+      stops: hubs.stops,
+    };
+  }
+
   return {
     from,
+    fromLong: from,
     pickupTime: open?.start_time ?? null,
     dropTime: close?.end_time ?? close?.start_time ?? null,
     dropLocation,

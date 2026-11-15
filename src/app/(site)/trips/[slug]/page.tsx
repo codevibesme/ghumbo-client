@@ -1,4 +1,4 @@
-import { Calendar, CalendarDays, MapPin, Phone, Star, Users } from "lucide-react";
+import { Calendar, CalendarDays, ChevronDown, MapPin, Phone, Star, Users } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { CSSProperties } from "react";
@@ -31,7 +31,7 @@ import { RouteLine } from "@/features/tours/components/route-line";
 import { TourCard } from "@/features/tours/components/tour-cards";
 import { duration, mealsLine, toActivities, toTourSummaries } from "@/features/tours/mappers";
 import { type TripPageData, getTripPageData, shortName } from "@/features/tours/trip-data";
-import type { Departure, TourSummary, TripReview } from "@/features/tours/types";
+import type { Departure, TourSummary, Trip, TripNote, TripReview } from "@/features/tours/types";
 import { FEW_SEATS, formatINR, pad2 } from "@/lib/format";
 
 const NUMBER_WORDS = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve"];
@@ -84,8 +84,9 @@ async function TripView({ data }: { data: TripPageData }) {
   const tags = { addOn: activities.flat().some((a) => a.addOn), payDirect: activities.flat().some((a) => a.payDirect) };
   const hasInclusions = trip.inclusions.length > 0 || trip.exclusions.length > 0;
   const hasPass = departures.length > 0;
-  // Left-column sections the sticky pass runs beside: overview, departures, itinerary, (inclusions), (meeting), reviews.
-  const leftSections = 4 + (hasInclusions ? 1 : 0) + (ends.from ? 1 : 0);
+  // Left-column sections the sticky pass runs beside:
+  // overview, departures, itinerary, (inclusions), (meeting), (pack), (faq), reviews.
+  const leftSections = 4 + (hasInclusions ? 1 : 0) + (ends.from ? 1 : 0) + (trip.whatToPack.length ? 1 : 0) + (trip.faq.length ? 1 : 0);
   const days = NUMBER_WORDS[trip.durationDays] ?? String(trip.durationDays);
 
   const crumbs = [
@@ -100,6 +101,7 @@ async function TripView({ data }: { data: TripPageData }) {
     <main className="flex-1 pb-24 md:pb-0">
       <JsonLd data={tripLd(data, reviews.data)} />
       <JsonLd data={breadcrumbLd(crumbs)} />
+      {trip.faq.length > 0 && <JsonLd data={faqLd(trip.faq)} />}
 
       <TripHeader data={data} crumbs={crumbs} capacity={capacity} />
 
@@ -122,6 +124,7 @@ async function TripView({ data }: { data: TripPageData }) {
                   <RouteLine stops={ends.stops} />
                 </div>
               )}
+              <Highlights items={trip.highlights} />
             </section>
 
             <section id="departures" aria-labelledby="h-dep" className={`${left} flex scroll-mt-24 flex-col gap-6`}>
@@ -162,6 +165,7 @@ async function TripView({ data }: { data: TripPageData }) {
               />
               <div className="flex flex-col gap-3">
                 <p className="m-0 max-w-[68ch] type-body">Everything is included unless it carries a tag.</p>
+                <HeadsUps items={trip.callouts} />
                 <TagLegend addOn={tags.addOn} payDirect={tags.payDirect} />
               </div>
               <div className="flex flex-col gap-6">
@@ -189,7 +193,9 @@ async function TripView({ data }: { data: TripPageData }) {
               </section>
             )}
 
-            <MeetingPoint ends={ends} lastDay={trip.durationDays} className={left} />
+            <MeetingPoint ends={ends} steps={trip.meetingInstructions} lastDay={trip.durationDays} className={left} />
+            <WhatToPack items={trip.whatToPack} className={left} />
+            <TripFaq faq={trip.faq} className={left} />
 
             <CallUs className={`${left} md:hidden`} />
             <Reviews reviews={reviews.data} next={first} className={left} />
@@ -264,29 +270,124 @@ function TripHeader({
   );
 }
 
-function MeetingPoint({ ends, lastDay, className }: { ends: TripPageData["ends"]; lastDay: number; className?: string }) {
+/** The best moments, under the route line: "DAY 2 · 04:45" beside one line. */
+function Highlights({ items }: { items: TripNote[] }) {
+  if (items.length === 0) return null;
+  return (
+    <ol aria-label="Highlights" className="ticket-surface m-0 list-none px-4 pt-0 pb-1 md:px-5">
+      {items.map((h, i) => (
+        <li
+          key={`${h.title}-${i}`}
+          className={`grid grid-cols-[minmax(0,1fr)] gap-1 py-3.5 md:grid-cols-[128px_minmax(0,1fr)] md:gap-4 ${i > 0 ? "border-t-[1.5px] border-rule" : ""}`}
+        >
+          <span className="whitespace-nowrap font-mono text-[14px] font-semibold uppercase leading-[1.45]">{h.title}</span>
+          <span className="text-[16px] leading-[1.45]">{h.description}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/** Things that vary (closures, swapped days, weather), as the design's note under "Day by day". */
+function HeadsUps({ items }: { items: TripNote[] }) {
+  if (items.length === 0) return null;
+  return (
+    <ul aria-label="Heads-up" className="m-0 flex max-w-[68ch] list-none flex-col gap-2 p-0">
+      {items.map((c, i) => (
+        <li key={`${c.title}-${i}`} className="type-body">
+          <strong className="font-semibold">{c.title.replace(/[.:]$/, "")}.</strong> {c.description}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function WhatToPack({ items, className }: { items: TripNote[]; className?: string }) {
+  if (items.length === 0) return null;
+  return (
+    <section aria-labelledby="h-pack" className={`flex flex-col gap-6 ${className}`}>
+      <SectionHeader kicker={`${items.length} ${items.length === 1 ? "thing" : "things"}`} title={<span id="h-pack">What to pack</span>} />
+      <ul className="ticket-surface m-0 grid list-none grid-cols-[minmax(0,1fr)] gap-x-8 px-4 pt-0 pb-1.5 md:grid-cols-2 md:px-5">
+        {items.map((item, i) => (
+          <li
+            key={`${item.title}-${i}`}
+            className={`grid grid-cols-[32px_minmax(0,1fr)] gap-3 py-3 md:py-3.5 ${i > 0 ? "border-t-[1.5px] border-rule" : ""} ${i === 1 ? "md:border-t-0" : ""}`}
+          >
+            <span className="font-mono text-[14px] font-semibold leading-[1.35] text-red">{pad2(i + 1)}</span>
+            <span className="flex flex-col gap-0.5">
+              <span className="text-[15px] font-semibold leading-[1.35]">{item.title}</span>
+              <span className="type-small text-muted">{item.description}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function TripFaq({ faq, className }: { faq: Trip["faq"]; className?: string }) {
+  if (faq.length === 0) return null;
+  return (
+    <section aria-labelledby="h-faq" className={`flex flex-col gap-6 ${className}`}>
+      <SectionHeader kicker="FAQ" title={<span id="h-faq">Good questions</span>} />
+      {/* <details> keeps every answer in the server HTML (AGENTS.md SEO rule). */}
+      <div className="border-b-2 border-dashed border-tear">
+        {faq.map((f, i) => (
+          <details key={f.question} open={i === 0} className="group border-t-2 border-dashed border-tear">
+            <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 py-4 text-[18px] font-bold leading-[1.3] [font-stretch:110%] [&::-webkit-details-marker]:hidden">
+              <h3 className="m-0 [font:inherit]">{f.question}</h3>
+              <ChevronDown size={20} aria-hidden className="shrink-0 transition-transform group-open:rotate-180" />
+            </summary>
+            <p className="m-0 max-w-[68ch] pb-5 type-body">{f.answer}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function MeetingPoint({ ends, steps, lastDay, className }: { ends: TripPageData["ends"]; steps: TripNote[]; lastDay: number; className?: string }) {
   if (!ends.from) return null;
   return (
-    <section className={`flex flex-col gap-6 ${className}`}>
-      <SectionHeader kicker="Meeting point & end point" title="Where we meet" />
+    <section aria-labelledby="h-meet" className={`flex flex-col gap-6 ${className}`}>
+      <SectionHeader kicker="Meeting point & end point" title={<span id="h-meet">Where we meet</span>} />
       {/* One ticket, start and end either side of a tear (stacked on phones), as on the design. */}
-      <div className="ticket-surface flex flex-col md:flex-row">
-        <div className="flex min-w-0 flex-1 flex-col gap-2 p-5">
-          <span className="type-label text-link">Start · Day 1{ends.pickupTime && ` · pickup ${ends.pickupTime}`}</span>
-          <h3 className="m-0 text-[18px] font-bold leading-[1.3] [font-stretch:110%]">{ends.from}</h3>
+      <div className="flex flex-col gap-4">
+        <div className="ticket-surface flex flex-col md:flex-row">
+          <div className="flex min-w-0 flex-1 flex-col gap-2 p-5">
+            <span className="type-label text-link">Start · Day 1{ends.pickupTime && ` · pickup ${ends.pickupTime}`}</span>
+            <h3 className="m-0 text-[18px] font-bold leading-[1.3] [font-stretch:110%]">{ends.fromLong ?? ends.from}</h3>
+          </div>
+          {ends.dropLocation && (
+            <>
+              <TearLine className="md:hidden" />
+              <TearLine orientation="vertical" className="hidden md:block" />
+              <div className="flex min-w-0 flex-1 flex-col gap-2 p-5">
+                <span className="type-label text-red">
+                  End · Day {lastDay}
+                  {ends.dropTime && ` · drop ${ends.dropTime}`}
+                </span>
+                <h3 className="m-0 text-[18px] font-bold leading-[1.3] [font-stretch:110%]">{ends.dropLocation}</h3>
+              </div>
+            </>
+          )}
         </div>
-        {ends.dropLocation && (
-          <>
-            <TearLine className="md:hidden" />
-            <TearLine orientation="vertical" className="hidden md:block" />
-            <div className="flex min-w-0 flex-1 flex-col gap-2 p-5">
-              <span className="type-label text-red">
-                End · Day {lastDay}
-                {ends.dropTime && ` · drop ${ends.dropTime}`}
-              </span>
-              <h3 className="m-0 text-[18px] font-bold leading-[1.3] [font-stretch:110%]">{ends.dropLocation}</h3>
-            </div>
-          </>
+        {/* The meeting steps, numbered like the packing list, under the ticket. */}
+        {steps.length > 0 && (
+          <ol aria-label="Meeting instructions" className="ticket-surface m-0 list-none px-4 pt-0 pb-1.5 md:px-5">
+            {steps.map((step, i) => (
+              <li
+                key={`${step.title}-${i}`}
+                className={`grid grid-cols-[32px_minmax(0,1fr)] gap-3 py-3 md:py-3.5 ${i > 0 ? "border-t-[1.5px] border-rule" : ""}`}
+              >
+                <span className="font-mono text-[14px] font-semibold leading-[1.35] text-red">{pad2(i + 1)}</span>
+                <span className="flex flex-col gap-0.5">
+                  <span className="text-[15px] font-semibold leading-[1.35]">{step.title.replace(/[.:]$/, "")}</span>
+                  <span className="type-small text-muted">{step.description}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
         )}
       </div>
     </section>
@@ -372,6 +473,15 @@ function ReviewCard({ review }: { review: TripReview }) {
       <span className="type-stub text-muted">Verified traveller · {new Date(review.createdAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}</span>
     </li>
   );
+}
+
+/** FAQPage for the trip's own questions (docs/seo-geo-guidelines.md §5). */
+function faqLd(faq: Trip["faq"]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faq.map((f) => ({ "@type": "Question", name: f.question, acceptedAnswer: { "@type": "Answer", text: f.answer } })),
+  };
 }
 
 /** TouristTrip + Product with one Offer per open departure (docs/seo-geo-guidelines.md §5). */
