@@ -1,6 +1,14 @@
 import { getAllTrips } from "@/features/tours/api";
 import { ComingSoonCard, DestinationTicket } from "@/features/destinations/components/destination-card";
-import { dayRange, destinationHref, firstSentence, tripStats } from "@/features/destinations/lib";
+import {
+  dayRange,
+  destinationHref,
+  destinationHubs,
+  firstSentence,
+  hubsLabel,
+  placeFacts,
+  tripStats,
+} from "@/features/destinations/lib";
 import type { Destination } from "@/features/destinations/types";
 import { formatINR } from "@/lib/format";
 
@@ -23,7 +31,7 @@ export async function PlaceCards({ live, soon }: { live: Destination[]; soon: De
             blurb={firstSentence(d.overview)}
             badge={`Live · ${stats.count} ${word}`}
             image={cover ? { src: cover.url, alt: cover.label ?? d.name } : null}
-            facts={range ? [{ label: "Trips", value: range }] : []}
+            facts={placeFacts(d.bestTime, range, hubsLabel(destinationHubs(trips), 3))}
             priceLabel={`${stats.count} ${word} · from, per person`}
             price={stats.priceFrom !== null ? formatINR(stats.priceFrom) : "Dates soon"}
             cta={`See ${d.name} trips →`}

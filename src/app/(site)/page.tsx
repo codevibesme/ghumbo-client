@@ -6,7 +6,16 @@ import { RoundStamp } from "@/components/ui/stamp";
 import { TextLink } from "@/components/ui/text-link";
 import { getCountries, getDestinations } from "@/features/destinations/api";
 import { DestinationTicket } from "@/features/destinations/components/destination-card";
-import { countrySlug, dayRange, destinationHref, firstSentence, tripStats } from "@/features/destinations/lib";
+import {
+  countrySlug,
+  dayRange,
+  destinationHref,
+  destinationHubs,
+  firstSentence,
+  hubsLabel,
+  placeFacts,
+  tripStats,
+} from "@/features/destinations/lib";
 import { getAllTrips, getUpcomingDepartures } from "@/features/tours/api";
 import { DepartureBoard } from "@/features/tours/components/departure-board";
 import { isListable, monthLabel, toUpcomingBoardRow, vibeOptions } from "@/features/tours/mappers";
@@ -129,7 +138,7 @@ export default async function Home() {
                   blurb={firstSentence(destination.overview)}
                   badge={`Live · ${stats.count} ${tripWord}`}
                   image={cover ? { src: cover.url, alt: cover.label ?? destination.name } : null}
-                  facts={range ? [{ label: "Trips", value: range }] : []}
+                  facts={placeFacts(destination.bestTime, range, hubsLabel(destinationHubs(placeTrips), 3))}
                   priceLabel={`${stats.count} ${tripWord} · from, per person`}
                   price={stats.priceFrom !== null ? formatINR(stats.priceFrom) : "Dates soon"}
                   cta={`See ${destination.name} trips →`}
@@ -146,7 +155,10 @@ export default async function Home() {
                 badge="Opening soon"
                 badgeTone="outline"
                 image={null}
-                facts={[{ label: "Trips", value: "Dates soon" }]}
+                facts={[
+                  ...(d.bestTime ? [{ label: "Best time", value: d.bestTime }] : []),
+                  { label: "Trips", value: "Dates soon" },
+                ]}
                 priceLabel="First departures"
                 price="Dates soon"
                 cta={`See ${d.name} →`}
