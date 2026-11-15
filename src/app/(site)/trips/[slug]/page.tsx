@@ -84,9 +84,7 @@ async function TripView({ data }: { data: TripPageData }) {
   const tags = { addOn: activities.flat().some((a) => a.addOn), payDirect: activities.flat().some((a) => a.payDirect) };
   const hasInclusions = trip.inclusions.length > 0 || trip.exclusions.length > 0;
   const hasPass = departures.length > 0;
-  // Left-column sections the sticky pass runs beside:
-  // overview, departures, itinerary, (inclusions), (meeting), (pack), (faq), reviews.
-  const leftSections = 4 + (hasInclusions ? 1 : 0) + (ends.from ? 1 : 0) + (trip.whatToPack.length ? 1 : 0) + (trip.faq.length ? 1 : 0);
+  const leftSections = leftSectionCount(trip, Boolean(ends.from));
   const days = NUMBER_WORDS[trip.durationDays] ?? String(trip.durationDays);
 
   const crumbs = [
@@ -210,6 +208,15 @@ async function TripView({ data }: { data: TripPageData }) {
   );
 }
 
+/**
+ * Left-column sections the sticky pass runs beside:
+ * overview, departures, itinerary, reviews, plus inclusions, meeting point, packing and FAQ when the trip has them.
+ */
+function leftSectionCount(trip: Trip, hasMeetingPoint: boolean) {
+  const optional = [trip.inclusions.length > 0 || trip.exclusions.length > 0, hasMeetingPoint, trip.whatToPack.length > 0, trip.faq.length > 0];
+  return 4 + optional.filter(Boolean).length;
+}
+
 function SeatLegend() {
   const item = "inline-flex items-center gap-2 text-[13px] leading-none text-muted";
   const sq = "h-3.5 w-2.5 rounded-[3px_3px_1px_1px]";
@@ -277,7 +284,7 @@ function Highlights({ items }: { items: TripNote[] }) {
     <ol aria-label="Highlights" className="ticket-surface m-0 list-none px-4 pt-0 pb-1 md:px-5">
       {items.map((h, i) => (
         <li
-          key={`${h.title}-${i}`}
+          key={`${h.title}|${h.description}`}
           className={`grid grid-cols-[minmax(0,1fr)] gap-1 py-3.5 md:grid-cols-[128px_minmax(0,1fr)] md:gap-4 ${i > 0 ? "border-t-[1.5px] border-rule" : ""}`}
         >
           <span className="whitespace-nowrap font-mono text-[14px] font-semibold uppercase leading-[1.45]">{h.title}</span>
@@ -293,8 +300,8 @@ function HeadsUps({ items }: { items: TripNote[] }) {
   if (items.length === 0) return null;
   return (
     <ul aria-label="Heads-up" className="m-0 flex max-w-[68ch] list-none flex-col gap-2 p-0">
-      {items.map((c, i) => (
-        <li key={`${c.title}-${i}`} className="type-body">
+      {items.map((c) => (
+        <li key={`${c.title}|${c.description}`} className="type-body">
           <strong className="font-semibold">{c.title.replace(/[.:]$/, "")}.</strong> {c.description}
         </li>
       ))}
@@ -310,7 +317,7 @@ function WhatToPack({ items, className }: { items: TripNote[]; className?: strin
       <ul className="ticket-surface m-0 grid list-none grid-cols-[minmax(0,1fr)] gap-x-8 px-4 pt-0 pb-1.5 md:grid-cols-2 md:px-5">
         {items.map((item, i) => (
           <li
-            key={`${item.title}-${i}`}
+            key={`${item.title}|${item.description}`}
             className={`grid grid-cols-[32px_minmax(0,1fr)] gap-3 py-3 md:py-3.5 ${i > 0 ? "border-t-[1.5px] border-rule" : ""} ${i === 1 ? "md:border-t-0" : ""}`}
           >
             <span className="font-mono text-[14px] font-semibold leading-[1.35] text-red">{pad2(i + 1)}</span>
@@ -377,7 +384,7 @@ function MeetingPoint({ ends, steps, lastDay, className }: { ends: TripPageData[
           <ol aria-label="Meeting instructions" className="ticket-surface m-0 list-none px-4 pt-0 pb-1.5 md:px-5">
             {steps.map((step, i) => (
               <li
-                key={`${step.title}-${i}`}
+                key={`${step.title}|${step.description}`}
                 className={`grid grid-cols-[32px_minmax(0,1fr)] gap-3 py-3 md:py-3.5 ${i > 0 ? "border-t-[1.5px] border-rule" : ""}`}
               >
                 <span className="font-mono text-[14px] font-semibold leading-[1.35] text-red">{pad2(i + 1)}</span>
