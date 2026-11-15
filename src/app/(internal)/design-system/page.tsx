@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Kicker } from "@/components/ui/section-header";
 import { TextLink } from "@/components/ui/text-link";
-import { ThemeToggle } from "@/features/theme/theme-toggle";
 import { ActionsSections } from "./_components/sections/actions";
 import { ContentSections } from "./_components/sections/content";
 import { FormsSections } from "./_components/sections/forms";
@@ -37,10 +36,9 @@ export default function DesignSystemPage() {
             <Kicker>Direction B · Ticket &amp; passport</Kicker>
             <h1 className="m-0 type-h1">Design system</h1>
             <p className="m-0 max-w-[60ch] type-body-l text-muted">
-              Tokens and components in code, mirroring the Ghumbo · Ticket canvas. Switch the theme to check the dark set.
+              Tokens and components in code, mirroring the Ghumbo · Ticket canvas.
             </p>
           </div>
-          <ThemeToggle />
         </div>
         <nav aria-label="Sections" className="flex flex-wrap gap-x-5">
           {nav.map(([id, label]) => (

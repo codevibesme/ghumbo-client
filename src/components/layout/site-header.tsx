@@ -9,7 +9,6 @@ import { Suspense, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { type NavKey, mainNav } from "@/config/site";
 import { fullName, initials, photoUrl, useSession } from "@/features/auth/session";
-import { ThemeToggle } from "@/features/theme/theme-toggle";
 import { cn } from "@/lib/cn";
 import { Logo } from "./logo";
 
@@ -191,7 +190,6 @@ function MobileMenu({ current, user }: Pick<SiteHeaderProps, "current" | "user">
                 </Link>
               </Button>
             )}
-            <ThemeToggle className="self-start" />
           </div>
         </Dialog.Content>
       </Dialog.Portal>

@@ -14,7 +14,7 @@ export default function GlobalError({ error, retry }: { error: Error & { digest?
       <head>
         <title>Something went wrong · Ghumbo</title>
         <meta name="robots" content="noindex" />
-        <meta name="color-scheme" content="light dark" />
+        <meta name="color-scheme" content="light" />
       </head>
       <body
         style={{

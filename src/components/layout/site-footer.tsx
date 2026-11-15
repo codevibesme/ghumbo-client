@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { legalLinks } from "@/config/legal";
 import { footerColumns, footerCompactLinks, footerTagline } from "@/config/site";
-import { ThemeToggle } from "@/features/theme/theme-toggle";
 import { Logo } from "./logo";
 
 /*
@@ -84,7 +83,6 @@ function FooterBase() {
           </Link>
         ))}
       </span>
-      <ThemeToggle tone="board" className="hidden md:inline-flex" />
     </div>
   );
 }
