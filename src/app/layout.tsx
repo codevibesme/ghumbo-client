@@ -3,7 +3,6 @@ import { Archivo, IBM_Plex_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { JsonLd } from "@/components/seo/json-ld";
 import { siteLd } from "@/config/seo";
-import { ThemeScript } from "@/features/theme/theme-script";
 
 import "./globals.css";
 
@@ -35,18 +34,15 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f2f4ec" },
-    { media: "(prefers-color-scheme: dark)", color: "#121821" },
-  ],
+  // Light only for now; the dark tokens stay in globals.css for later.
+  themeColor: "#f2f4ec",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en-IN" className={`${archivo.variable} ${plexMono.variable}`} suppressHydrationWarning>
-      <head>
-        <ThemeScript />
-      </head>
+    // Always light: data-theme="light" overrides the OS preference. To bring dark mode back, drop it and render
+    // ThemeScript (features/theme) in <head> again.
+    <html lang="en-IN" data-theme="light" className={`${archivo.variable} ${plexMono.variable}`}>
       <body className="flex min-h-dvh flex-col">
         <JsonLd data={siteLd()} />
         <Providers>{children}</Providers>
