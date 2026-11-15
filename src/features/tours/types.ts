@@ -65,11 +65,33 @@ export type TripTier = "budget" | "standard" | "premium";
 /** A trip's tag; the labels are the "vibes" (Hills, Heritage…) that /trips filters on. */
 export type TripTag = { label: string; description: string | null };
 
+/** A station, airport, port or bus stand with its code (NJP, IXB, HWH, IXZ). */
+export type TripHub = {
+  name: string;
+  type: "airport" | "station" | "port" | "bus_stand";
+  /** The city the hub serves: "Siliguri" for NJP and IXB. Groups hubs on destination pages. */
+  city: string;
+  code: string;
+};
+
+/** Title + one or two lines: highlights ("DAY 2 · 04:45"), heads-ups, packing items, meeting steps. */
+export type TripNote = { title: string; description: string };
+
 /** GET /trips list item. */
 export type TripListItem = {
   id: string;
   name: string;
+  /** Short card blurb; "" when not written yet. */
+  tagline: string;
   slug: string;
+  /** "Oct–Mar"; "" when unknown. */
+  bestTime: string;
+  /** Where the group is picked up, e.g. NJP and IXB. */
+  sourceHubs: TripHub[];
+  /** The place the trip is based at; the end of the card route. */
+  destinationHub: TripHub | null;
+  /** Places between the hubs and the destination, for the route line. */
+  stops: string[];
   tier: TripTier;
   durationDays: number;
   durationNights: number;
@@ -110,12 +132,24 @@ export type Trip = {
   status: "draft" | "live";
   name: string;
   slug: string;
+  tagline: string;
   overview: string;
   tier: TripTier;
   audience: "open" | "couples";
   durationDays: number;
   durationNights: number;
+  sourceHubs: TripHub[];
+  destinationHub: TripHub | null;
+  stops: string[];
+  bestTime: string;
   tags: TripTag[];
+  /** The best moments: title is "DAY 2 · 04:45" or "3 NIGHTS". */
+  highlights: TripNote[];
+  /** Heads-ups for things that vary: weekly closures, swapped days, weather. */
+  callouts: TripNote[];
+  whatToPack: TripNote[];
+  meetingInstructions: TripNote[];
+  faq: { question: string; answer: string }[];
   itinerary: { days: ItineraryDayData[] };
   inclusions: { title: string; description: string }[];
   exclusions: { title: string; description: string }[];

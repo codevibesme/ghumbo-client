@@ -1,4 +1,4 @@
-import { Check, CalendarRange, IndianRupee } from "lucide-react";
+import { Check, CalendarRange, IndianRupee, MapPin, Sun } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,15 +9,29 @@ import { Badge } from "@/components/ui/badge";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { FactTile } from "@/components/ui/fact-tile";
 import { Kicker, SectionHeader } from "@/components/ui/section-header";
+import { TearLine } from "@/components/ui/tear-line";
 import { TextLink } from "@/components/ui/text-link";
 import { buttonClasses } from "@/components/ui/variants";
 import { getCountries, getCountry, getDestination, getDestinationById, getDestinations } from "@/features/destinations/api";
 import { MountainsDrawing } from "@/features/destinations/components/destination-card";
-import { countryHref, countrySlug, dayRange, destinationHref, summary, tripStats } from "@/features/destinations/lib";
+import {
+  bestTimeNote,
+  countryHref,
+  countrySlug,
+  dayRange,
+  destinationHref,
+  destinationHubs,
+  hubsLabel,
+  hubGroups,
+  hubsNote,
+  type HubGroup,
+  summary,
+  tripStats,
+} from "@/features/destinations/lib";
 import type { Country, Destination } from "@/features/destinations/types";
 import { bySoonest, getAllTrips, getTripsByDestination } from "@/features/tours/api";
 import { TourCard } from "@/features/tours/components/tour-cards";
-import { toTourSummaries, tripHref, vibeOptions } from "@/features/tours/mappers";
+import { shortName, toTourSummaries, tripHref, vibeOptions } from "@/features/tours/mappers";
 import { formatINR } from "@/lib/format";
 import { PlaceCards } from "../_components/place-cards";
 
@@ -186,6 +200,7 @@ async function DestinationView({ destination, country }: { destination: Destinat
   const trips = (await getTripsByDestination(destination.slug)).toSorted(bySoonest);
   const stats = tripStats(trips);
   const range = dayRange(stats);
+  const hubs = destinationHubs(trips);
   const tours = toTourSummaries(trips);
   const vibes = vibeOptions(trips);
   const cover = destination.assets[0];
@@ -243,8 +258,24 @@ async function DestinationView({ destination, country }: { destination: Destinat
         )}
       </section>
 
-      {(stats.priceFrom !== null || range) && (
+      {(stats.priceFrom !== null || range || destination.bestTime || hubs.length > 0) && (
         <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {destination.bestTime && (
+            <FactTile
+              icon={<Sun size={18} aria-hidden />}
+              label="Best time"
+              value={destination.bestTime}
+              note={bestTimeNote(destination.bestTime, trips)}
+            />
+          )}
+          {hubs.length > 0 && (
+            <FactTile
+              icon={<MapPin size={18} aria-hidden />}
+              label="Hubs"
+              value={hubsLabel(hubs, 3)}
+              note={hubsNote(hubs)}
+            />
+          )}
           {stats.priceFrom !== null && (
             <FactTile
               icon={<IndianRupee size={18} aria-hidden />}
@@ -285,7 +316,76 @@ async function DestinationView({ destination, country }: { destination: Destinat
           ))}
         </div>
       </section>
+
+      <GettingThere groups={hubGroups(trips)} />
     </>
+  );
+}
+
+/** Short trip names ("Darjeeling"), or the full name where two trips would share one. */
+function tripNames(trips: { name: string }[]) {
+  const short = trips.map((t) => shortName(t.name));
+  return trips.map((t, i) => (short.indexOf(short[i]) === short.lastIndexOf(short[i]) ? short[i] : t.name));
+}
+
+const COUNT_WORDS = ["No", "One", "Two", "Three", "Four", "Five", "Six"];
+
+/** T04 "Getting there": one ticket per hub city, its airports and stations, and the trips that leave from it. */
+function GettingThere({ groups }: { groups: HubGroup[] }) {
+  if (groups.length === 0) return null;
+  const one = groups.length === 1;
+  const title = one ? `One hub: ${groups[0].city}` : `${COUNT_WORDS[groups.length] ?? groups.length} hubs, every trip`;
+  const flies = groups.some((g) => g.airports.length > 0);
+  const rides = groups.some((g) => g.stations.length + g.busStands.length + g.jetties.length > 0);
+  const travel = flies && rides ? "train or flight" : flies ? "flight" : "train";
+  return (
+    <section aria-labelledby="h-hubs" className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
+        <SectionHeader kicker="Getting there" title={<span id="h-hubs">{title}</span>} />
+        <p className="m-0 max-w-[68ch] type-body text-muted">
+          Every trip starts and ends at a hub. Your {travel} there isn&apos;t included, so sort it once
+          we confirm your seat on the call.
+        </p>
+      </div>
+      <div className="grid gap-6 md:grid-cols-2">
+        {groups.map((g) => {
+          const cells = [
+            { label: g.airports.length > 1 ? "Airports" : "Airport", values: g.airports },
+            { label: g.stations.length > 1 ? "Stations" : "Station", values: g.stations },
+            { label: g.jetties.length > 1 ? "Ferry jetties" : "Ferry jetty", values: g.jetties },
+            { label: g.busStands.length > 1 ? "Bus stands" : "Bus stand", values: g.busStands },
+          ].filter((c) => c.values.length > 0);
+          return (
+            <div key={g.city} className="ticket-surface flex min-w-0 flex-col">
+              <div className="flex justify-between gap-3 rounded-t-[4.5px] bg-passport px-5 py-3.5 font-mono text-[12px] font-semibold uppercase leading-none tracking-[0.08em] text-on-passport">
+                <span>Start &amp; end</span>
+                <span>
+                  {g.trips.length} {g.trips.length === 1 ? "trip" : "trips"}
+                </span>
+              </div>
+              <div className="flex flex-col gap-4 p-5">
+                <h3 className="m-0 text-[22px] font-extrabold leading-[1.15] tracking-[-0.01em] [font-stretch:115%]">{g.city}</h3>
+                <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] gap-4">
+                  {cells.map((c) => (
+                    <span key={c.label} className="flex min-w-0 flex-col gap-1.5">
+                      <span className="type-stub text-muted">{c.label}</span>
+                      <span className="text-[20px] font-extrabold leading-[1.15] tracking-[-0.02em] [font-stretch:115%] md:text-[24px]">
+                        {c.values.join(" · ")}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <TearLine />
+              <div className="flex flex-col gap-1.5 px-5 pt-4 pb-5">
+                <span className="type-stub text-muted">Trips from here</span>
+                <span className="text-[15px] leading-normal">{tripNames(g.trips).join(", ")}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 

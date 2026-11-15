@@ -26,6 +26,8 @@ export type Destination = {
   status: PlaceStatus;
   name: string;
   slug: string;
+  /** "Oct–Mar"; "" when unknown. */
+  bestTime: string;
   overview: string;
   assets: Asset[];
   /** ISO timestamp of the last edit. */
