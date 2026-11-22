@@ -1,6 +1,6 @@
 import { api } from "@/lib/api";
 import type { Paginated } from "@/lib/api";
-import type { CreateBooking, PaymentOrder, UserBooking } from "./types";
+import type { CancelBooking, CancelQuote, CancelResult, CreateBooking, PaymentOrder, UserBooking } from "./types";
 
 /** Holds the seats for 10 minutes and creates the Razorpay order. */
 export function createBooking(body: CreateBooking) {
@@ -31,4 +31,14 @@ export async function getAllMyBookings() {
     if (!res.hasNext) break;
   }
   return all;
+}
+
+/** What cancelling now gives back. 409 once it can't be cancelled (not paid, already cancelled, trip started). */
+export function getCancelQuote(bookingId: string) {
+  return api<CancelQuote>("GET", `/billings/bookings/cancel/quote/${encodeURIComponent(bookingId)}`);
+}
+
+/** Cancels a paid booking: seats go back on sale and the refund starts. Can't be undone. */
+export function cancelBooking(body: CancelBooking) {
+  return api<CancelResult>("POST", "/billings/bookings/cancel", body);
 }
