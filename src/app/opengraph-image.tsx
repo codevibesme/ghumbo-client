@@ -6,11 +6,11 @@ import { ogFonts } from "@/lib/og-fonts";
 
 /*
  * Default share card (home, listings, legal pages). It mirrors the home hero:
- * the route-loop logo, the "Group trips across India" headline in Archivo
+ * the route-loop logo, the "Travel more. Plan less." headline in Archivo
  * ExtraBold, and the featured trip's photo on a ticket. Trip and destination
  * pages share their own cover photo instead.
  */
-export const alt = "Ghumbo: group trips across India, on fixed dates";
+export const alt = "Ghumbo: Travel more. Plan less. Fully planned trips across India.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -65,15 +65,15 @@ export default async function OpengraphImage() {
           <span
             style={{ fontFamily: "Archivo Display", fontWeight: 800, fontSize: 74, lineHeight: 0.98, letterSpacing: -2.5, marginTop: 14 }}
           >
-            Group trips across India,
+            Travel more. Plan less.
           </span>
-          <span style={{ fontFamily: "Archivo Display", fontWeight: 800, fontSize: 42, letterSpacing: -1, marginTop: 14 }}>on fixed dates.</span>
+          <span style={{ fontFamily: "Archivo Display", fontWeight: 800, fontSize: 42, letterSpacing: -1, marginTop: 14 }}>Pick a trip. Pack a bag. We’ll handle the rest.</span>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
           <div style={{ display: "flex", borderTop: `3px dashed ${C.tear}` }} />
           <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "Archivo", fontWeight: 500, fontSize: 22, color: C.muted }}>
-            <span>Groups of up to 18 · a call within 24 hours</span>
+            <span>Fully planned trips across India · pay online, just show up</span>
             <span>ghumbo.com</span>
           </div>
         </div>

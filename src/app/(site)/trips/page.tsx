@@ -17,8 +17,8 @@ import type { TripListItem } from "@/features/tours/types";
 import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = {
-  title: "All group trips",
-  description: "Every Ghumbo group trip on fixed dates: groups of up to 18, prices per person, twin sharing, taxes included.",
+  title: "All trips",
+  description: "Every fully planned Ghumbo trip on fixed dates, with live seats. Prices per person, twin sharing, taxes included.",
   alternates: { canonical: "/trips" },
 };
 
@@ -32,20 +32,21 @@ export const metadata: Metadata = {
  */
 
 const BUDGETS = [
-  { value: "under-6000", label: "Under ₹6,000", test: (p: number) => p < 6000 },
-  { value: "6000-10000", label: "₹6,000–10,000", test: (p: number) => p >= 6000 && p <= 10000 },
-  { value: "over-10000", label: "Over ₹10,000", test: (p: number) => p > 10000 },
+  { value: "under-6000", label: "Under ₹6k", test: (p: number) => p < 6000 },
+  { value: "6000-10000", label: "₹6–10k", test: (p: number) => p >= 6000 && p <= 10000 },
+  { value: "over-10000", label: "₹10k+", test: (p: number) => p > 10000 },
 ];
 
 const DURATIONS = [
-  { value: "short", label: "Up to 3 days", test: (d: number) => d <= 3 },
+  { value: "short", label: "2–3 days", test: (d: number) => d <= 3 },
   { value: "medium", label: "4–5 days", test: (d: number) => d >= 4 && d <= 5 },
   { value: "long", label: "6+ days", test: (d: number) => d >= 6 },
 ];
 
+// The canvas also has "Popular" first; there's no popularity signal from the backend yet.
 const SORTS = [
-  { value: "soonest", label: "Soonest" },
-  { value: "price", label: "Price low to high" },
+  { value: "price", label: "Price low to high", phrase: "lowest price first" },
+  { value: "soonest", label: "Soonest", phrase: "soonest first" },
 ];
 
 type Filters = { q?: string; vibe?: string; destination?: string; month?: string; budget?: string; duration?: string; sort?: string };
@@ -155,7 +156,8 @@ function facets(catalog: TripListItem[]) {
   ].map(([value, label]) => ({ value, label }));
   const months: Option[] = [...new Set(catalog.filter(isListable).map((t) => t.nextDeparture.startDate.slice(0, 7)))]
     .sort()
-    .map((m) => ({ value: m, label: monthLabel(m) }));
+    // Chips read "NOV", as on the canvas; the applied chip spells it out.
+    .map((m) => ({ value: m, label: monthLabel(m).slice(0, 3).toUpperCase() }));
   return { destinations, months, vibes: vibeOptions(catalog) };
 }
 
@@ -164,10 +166,10 @@ function appliedFilters(filters: Filters, destinations: Option[]) {
   const labelOf: Record<Exclude<keyof Filters, "sort">, (v: string) => string> = {
     q: (v) => `Search: ${v}`,
     vibe: (v) => `Vibe: ${v}`,
-    destination: (v) => destinations.find((o) => o.value === v)?.label ?? v,
-    month: (v) => (/^\d{4}-(0[1-9]|1[0-2])$/.test(v) ? monthLabel(v) : v),
-    budget: (v) => BUDGETS.find((o) => o.value === v)?.label ?? v,
-    duration: (v) => DURATIONS.find((o) => o.value === v)?.label ?? v,
+    destination: (v) => `Destination: ${destinations.find((o) => o.value === v)?.label ?? v}`,
+    month: (v) => `Month: ${/^\d{4}-(0[1-9]|1[0-2])$/.test(v) ? monthLabel(v) : v}`,
+    budget: (v) => `Budget: ${BUDGETS.find((o) => o.value === v)?.label ?? v}`,
+    duration: (v) => `Duration: ${DURATIONS.find((o) => o.value === v)?.label ?? v}`,
   };
   return (Object.keys(labelOf) as (keyof typeof labelOf)[]).flatMap((key) => {
     const v = filters[key];
@@ -175,12 +177,12 @@ function appliedFilters(filters: Filters, destinations: Option[]) {
   });
 }
 
-function countLine(trips: TripListItem[] | null, shown: number, filters: Filters, filterCount: number) {
+/** "9 trips, soonest first", as on the canvas. */
+function countLine(trips: TripListItem[] | null, shown: number, filters: Filters) {
   if (!trips) return "Loading trips…";
-  const verb = shown === 1 ? "matches" : "match";
-  if (filters.q) return `${plural(shown)} ${verb} “${filters.q}”.`;
-  if (filterCount) return `${plural(shown)} ${verb} these filters.`;
-  return `${plural(shown)} on the board.`;
+  if (shown === 0) return "0 trips match these filters.";
+  const sort = SORTS.find((o) => o.value === (filters.sort ?? "soonest")) ?? SORTS[1];
+  return `${plural(shown)}, ${sort.phrase}`;
 }
 
 function TripsBoard({ trips, catalog, filters }: { trips: TripListItem[] | null; catalog: TripListItem[]; filters: Filters }) {
@@ -194,10 +196,10 @@ function TripsBoard({ trips, catalog, filters }: { trips: TripListItem[] | null;
   const panel = (
     <>
       <FilterGroup title="Destination" name="destination" options={destinations} filters={filters} />
-      <FilterGroup title="Vibe" name="vibe" options={vibes} filters={filters} />
       <FilterGroup title="Month" name="month" options={months} filters={filters} />
       <FilterGroup title="Budget, per person" name="budget" options={BUDGETS} filters={filters} />
       <FilterGroup title="Duration" name="duration" options={DURATIONS} filters={filters} />
+      <FilterGroup title="Vibe" name="vibe" options={vibes} filters={filters} />
     </>
   );
 
@@ -207,13 +209,12 @@ function TripsBoard({ trips, catalog, filters }: { trips: TripListItem[] | null;
         <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Trips" }]} />
         <h1 className="m-0 mt-4 type-h1">All trips</h1>
         <p className="m-0 mt-4 max-w-[52ch] type-body-l font-semibold" aria-live="polite">
-          {countLine(trips, shown.length, filters, filterCount)}
+          {countLine(trips, shown.length, filters)}
         </p>
         <p className="m-0 mt-1 max-w-[68ch] type-small text-muted md:mt-2">
           <span className="md:hidden">All live destinations. Per person, twin sharing, taxes included.</span>
           <span className="hidden md:inline">
-            Showing every live destination. Fixed dates, groups of up to 18; prices are per person, twin sharing, taxes
-            included.
+            Showing every live destination. Fixed dates, fully planned; prices are per person, twin sharing, taxes included.
           </span>
         </p>
       </div>
@@ -280,7 +281,7 @@ function TripsBoard({ trips, catalog, filters }: { trips: TripListItem[] | null;
                 <Link
                   key={a.key}
                   href={hrefFor({ ...filters, [a.key]: undefined })}
-                  aria-label={`Remove ${a.key === "q" ? "search" : "filter"}: ${a.label}`}
+                  aria-label={`Remove filter: ${a.label}`}
                   rel="nofollow"
                   scroll={false}
                   className={cn(
@@ -299,31 +300,69 @@ function TripsBoard({ trips, catalog, filters }: { trips: TripListItem[] | null;
           )}
 
           <hr className="m-0 border-0 border-t-2 border-dashed border-tear" />
-
-          {searchMissed ? (
-            <NoResults q={filters.q ?? ""} filters={filters} catalog={catalog} />
-          ) : trips && shown.length === 0 ? (
-            <EmptyState
-              icon={<SearchX size={24} aria-hidden />}
-              title="No trips match all of that"
-              action={
-                <Link href={hrefFor({ q: filters.q, sort: filters.sort })} rel="nofollow" className={buttonClasses({ variant: "secondary", size: "m" })}>
-                  Clear filters
-                </Link>
-              }
-            >
-              Drop a filter or two and the board fills up again.
-            </EmptyState>
-          ) : (
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(min(300px,100%),1fr))] gap-6">
-              {toTourSummaries(shown).map((t) => (
-                <TourCard key={t.href} tour={t} />
-              ))}
-            </div>
-          )}
+          <TripsResults trips={trips} shown={shown} catalog={catalog} filters={filters} searchMissed={searchMissed} />
         </section>
       </div>
     </>
+  );
+}
+
+/** Below the filter row: the cards, the search miss (T15), or no filter match plus suggestions. */
+function TripsResults({
+  trips,
+  shown,
+  catalog,
+  filters,
+  searchMissed,
+}: {
+  trips: TripListItem[] | null;
+  shown: TripListItem[];
+  catalog: TripListItem[];
+  filters: Filters;
+  searchMissed: boolean;
+}) {
+  if (searchMissed) return <NoResults q={filters.q ?? ""} filters={filters} catalog={catalog} />;
+  if (trips && shown.length === 0) {
+    return (
+      <>
+        <EmptyState
+          icon={<SearchX size={24} aria-hidden />}
+          title="No trips match all of that"
+          action={
+            <Link href={hrefFor({ q: filters.q, sort: filters.sort })} rel="nofollow" className={buttonClasses({ variant: "secondary", size: "m" })}>
+              Clear filters
+            </Link>
+          }
+        >
+          Drop a filter or two and the board fills up again.
+        </EmptyState>
+        <Suggestions catalog={catalog} />
+      </>
+    );
+  }
+  return (
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(min(300px,100%),1fr))] gap-6">
+      {toTourSummaries(shown).map((t) => (
+        <TourCard key={t.href} tour={t} />
+      ))}
+    </div>
+  );
+}
+
+/** T15's "Try these instead": Ghumbo picks first, then the soonest departures. */
+function Suggestions({ catalog }: { catalog: TripListItem[] }) {
+  const live = catalog.filter(isListable);
+  const picks = toTourSummaries(live.toSorted((a, b) => Number(Boolean(b.isRecommended)) - Number(Boolean(a.isRecommended)))).slice(0, 3);
+  if (!picks.length) return null;
+  return (
+    <section className="flex flex-col gap-6 pt-6">
+      <SectionHeader kicker="Leaving soon" title="Try these instead" action={<TextLink href="/trips">All trips →</TextLink>} />
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(min(256px,100%),1fr))] gap-6">
+        {picks.map((t) => (
+          <TourCard key={t.href} tour={t} />
+        ))}
+      </div>
+    </section>
   );
 }
 

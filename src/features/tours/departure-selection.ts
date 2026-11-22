@@ -6,8 +6,8 @@ export type DepartureSelection = {
   departures: Departure[];
   selected: Departure;
   select: (id: string) => void;
-  /** Request page URL for the selected date. */
-  requestHref: string;
+  /** Checkout URL for the selected date. */
+  bookHref: string;
 };
 
 export const DepartureSelectionContext = createContext<DepartureSelection | null>(null);

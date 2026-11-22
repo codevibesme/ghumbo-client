@@ -45,7 +45,7 @@ export function DepartureBoard({
           <col />
           <col className="w-[82px]" />
           <col className="w-[102px]" />
-          <col className="w-[90px]" />
+          <col className="w-[136px]" />
         </colgroup>
         <thead>
           <tr>

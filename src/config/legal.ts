@@ -20,7 +20,7 @@ export const business = {
 export const operator = business.name === "Ghumbo" ? "Ghumbo" : `${business.name} (“Ghumbo”)`;
 
 /** Shown as "Updated …" on all three pages. Change it whenever a policy changes. */
-export const LEGAL_UPDATED = { iso: "2026-11-06", label: "6 November 2026" };
+export const LEGAL_UPDATED = { iso: "2026-11-22", label: "22 November 2026" };
 
 export const legalLinks = {
   terms: { label: "Terms of use", short: "Terms", href: "/terms" },
@@ -44,4 +44,4 @@ export const REFUND_WORKING_DAYS = 7;
 
 /** One paragraph for FAQs and summaries; the policy page has the detail. */
 export const cancellationSummary =
-  "Nothing is charged until you pay, so withdrawing a request costs nothing. Once paid, we keep 10% of the trip cost if you cancel 30 or more days before departure, 50% at 15 to 29 days, 75% at 7 to 14 days, and everything after that, and refund the rest within 7 working days. Seats can't be passed to someone else. If we cancel, you choose a full refund or a free move to another date.";
+  "Unpaid bookings cost nothing: they expire when the 10-minute hold runs out. Once paid, we keep 10% of the trip cost if you cancel 30 or more days before departure, 50% at 15 to 29 days, 75% at 7 to 14 days, and everything after that, and refund the rest within 7 working days. Seats can't be passed to someone else. If we cancel, you choose a full refund or a free move to another date.";

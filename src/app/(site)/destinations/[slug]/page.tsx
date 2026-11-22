@@ -71,8 +71,8 @@ export async function generateMetadata({ params }: PageProps<"/destinations/[slu
   if (!place) return { title: "Destination not found" };
   if (place.kind === "country") {
     return {
-      title: `${place.country.name} group trips`,
-      description: `Where Ghumbo runs fixed-date group trips in ${place.country.name}, and where we open next.`,
+      title: `${place.country.name} trips`,
+      description: `Where Ghumbo runs fully planned trips in ${place.country.name}, and where we open next.`,
       alternates: { canonical: `/destinations/${slug}` },
     };
   }
@@ -80,7 +80,7 @@ export async function generateMetadata({ params }: PageProps<"/destinations/[slu
   const stats = tripStats(trips);
   const cover = place.destination.assets[0];
   return {
-    title: `${place.destination.name} group trips${stats.count ? ` · ${stats.count} trips${stats.priceFrom ? ` from ${formatINR(stats.priceFrom)}` : ""}` : ""}`,
+    title: `${place.destination.name} trips${stats.count ? ` · ${stats.count} trips${stats.priceFrom ? ` from ${formatINR(stats.priceFrom)}` : ""}` : ""}`,
     description: place.destination.overview.slice(0, 157).replace(/\s\S*$/, "") + "…",
     alternates: { canonical: `/destinations/${slug}` },
     openGraph: cover ? { images: [{ url: cover.url, alt: cover.label ?? place.destination.name }] } : undefined,
@@ -343,8 +343,8 @@ function GettingThere({ groups }: { groups: HubGroup[] }) {
       <div className="flex flex-col gap-4">
         <SectionHeader kicker="Getting there" title={<span id="h-hubs">{title}</span>} />
         <p className="m-0 max-w-[68ch] type-body text-muted">
-          Every trip starts and ends at a hub. Your {travel} there isn&apos;t included, so sort it once
-          we confirm your seat on the call.
+          Every trip starts and ends at a hub. Your {travel} there isn&apos;t included, so book it once your seat is
+          confirmed.
         </p>
       </div>
       <div className="grid gap-6 md:grid-cols-2">
@@ -394,7 +394,7 @@ function GettingThere({ groups }: { groups: HubGroup[] }) {
 /* ------------------------------------------------------------------ */
 
 const DECIDED = [
-  { title: "Fixed dates and a coordinator", body: "Same deal as every Ghumbo trip: pick a departure, request a seat, we call you." },
+  { title: "Fixed dates and a coordinator", body: "Same deal as every Ghumbo trip: pick a departure, pay for your seat, just show up." },
   { title: "Stays, transfers and permits sorted", body: "Homestays, jeeps and the permit paperwork, handled for you." },
 ];
 

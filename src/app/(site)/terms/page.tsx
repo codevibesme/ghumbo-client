@@ -7,7 +7,7 @@ import { supportEmail, supportPhone } from "@/config/site";
 export const metadata: Metadata = {
   title: "Terms of use",
   description:
-    "The terms for requesting a seat and travelling with Ghumbo: how booking and payment work, what’s included, conduct on the trip, our responsibilities and how disputes are handled.",
+    "The terms for booking and travelling with Ghumbo: how booking and payment work, what’s included, conduct on the trip, our responsibilities and how disputes are handled.",
   alternates: { canonical: "/terms" },
 };
 
@@ -19,13 +19,13 @@ const sections: LegalSection[] = [
       <>
         <p>
           These terms are an agreement between you and {operator}, {business.address}
-          {business.gstin && ` (GSTIN ${business.gstin})`}. They apply when you use ghumbo.com, request a seat, or travel
-          with us. Our <Link href="/cancellation-policy">cancellation policy</Link> and{" "}
+          {business.gstin && ` (GSTIN ${business.gstin})`}. They apply when you use ghumbo.com, book a trip, or travel with
+          us. Our <Link href="/cancellation-policy">cancellation policy</Link> and{" "}
           <Link href="/privacy">privacy policy</Link> are part of them.
         </p>
         <p>
-          Please read them before you pay. If something here conflicts with what we agree with you in writing for a
-          particular trip, the written agreement wins.
+          You confirm you’ve read them, and the cancellation policy, when you tick the box at checkout. If something here
+          conflicts with what we agree with you in writing for a particular trip, the written agreement wins.
         </p>
       </>
     ),
@@ -48,19 +48,28 @@ const sections: LegalSection[] = [
     id: "how-booking-works",
     title: "How booking works",
     body: (
-      <ol className="m-0 flex list-decimal flex-col gap-1.5 pl-5">
-        <li className="pl-1">
-          <strong>Request a seat.</strong> It’s free and not a booking: we don’t hold a seat for a request alone.
-        </li>
-        <li className="pl-1">
-          <strong>We call you</strong> within 24 hours to confirm the date, room sharing and price, and answer your
-          questions.
-        </li>
-        <li className="pl-1">
-          <strong>You pay in full</strong> by the secure link we email you. Your seat is confirmed only once the full
-          amount is paid. If the link isn’t paid by the time we agree on the call, the seat goes back on sale.
-        </li>
-      </ol>
+      <>
+        <ol className="m-0 flex list-decimal flex-col gap-1.5 pl-5">
+          <li className="pl-1">
+            <strong>Sign in and pick your travellers.</strong> Choose a departure, then tick everyone who’s coming. Names
+            must match their government ID.
+          </li>
+          <li className="pl-1">
+            <strong>We hold your seats for 10 minutes.</strong> Pressing Pay creates your booking and holds the seats while
+            you pay. Nothing is charged at this point.
+          </li>
+          <li className="pl-1">
+            <strong>You pay in full on Razorpay’s secure checkout</strong> by UPI, card or netbanking. Your booking is
+            confirmed once the payment clears, and we email your confirmation and invoice.
+          </li>
+        </ol>
+        <p>
+          If the 10 minutes run out before the payment goes through, the booking expires and the seats go back on sale.
+          You can start a new booking at any time. If money leaves your account after a booking has expired, we confirm
+          the seats if they’re still free; if they aren’t, we refund the full amount automatically. You will never be
+          charged twice for one booking.
+        </p>
+      </>
     ),
   },
   {
@@ -69,14 +78,14 @@ const sections: LegalSection[] = [
     body: (
       <ul>
         <li>
-          Prices are per person, twin sharing, and include all taxes. The estimate you see when you request a seat can change
-          before you pay; the amount on your payment link is final.
+          Prices are per person, twin sharing, and include all taxes. There’s no booking fee. Every traveller pays the same
+          price for a seat, whatever their age. The total shown at checkout is the amount you pay.
         </li>
         <li>
-          You pay {business.name} only, through the secure link from billing@mail.ghumbo.com. We never ask you to pay a
-          personal account, and never ask for an OTP, card details or a UPI PIN over the phone or chat.
+          You pay {business.name} only, through Razorpay’s checkout on ghumbo.com. We never ask you to pay a personal
+          account, and never ask for an OTP, card details or a UPI PIN over the phone or chat.
         </li>
-        <li>We send an invoice for every payment.</li>
+        <li>We email a receipt and invoice from billing@mail.ghumbo.com for every payment.</li>
       </ul>
     ),
   },
@@ -155,14 +164,18 @@ const sections: LegalSection[] = [
           with it can sign in as you.
         </li>
         <li>
-          Don’t misuse the site: no automated scraping, no attempts to break in or overload it, no requests in someone
-          else’s name. We may suspend accounts that do.
+          Don’t misuse the site: no automated scraping, no attempts to break in or overload it, no bookings in someone
+          else’s name without their agreement. We may suspend accounts that do.
         </li>
         <li>
           The text, photos, design and the Ghumbo name and logo belong to us or to the people who licensed them to us.
           Please don’t copy them for commercial use.
         </li>
-        <li>We take care to keep trip details and prices accurate, but mistakes can happen; we’ll confirm everything on the call before you pay.</li>
+        <li>
+          We take care to keep trip details and prices accurate, but mistakes can happen. If we find a clear error in a
+          price after you’ve paid, we’ll contact you, and you can keep the booking at the right price or cancel for a full
+          refund.
+        </li>
       </ul>
     ),
   },
@@ -214,7 +227,7 @@ export default function TermsPage() {
       current="terms"
       kicker="Policies · terms of use"
       title="Terms of use"
-      lede="How requesting a seat, paying and travelling with Ghumbo works, what we’re responsible for, and what we ask of you. Plain English, no small print."
+      lede="How booking, paying and travelling with Ghumbo works, what we’re responsible for, and what we ask of you. Plain English, no small print."
       sections={sections}
     />
   );

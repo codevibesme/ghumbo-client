@@ -144,7 +144,7 @@ export function SignInForm({ next, error }: { next: string; error?: string }) {
       <div className="mt-6 flex flex-col gap-1 border-t-2 border-dashed border-tear pt-4">
         <p className="m-0 type-small text-muted [&_a]:text-link [&_a]:underline [&_a:hover]:text-red">
           By continuing you agree to our <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy policy</Link>.
-          Just browsing? You can request a seat without an account.
+          Just browsing? No account needed until you book.
         </p>
         <div className="flex">
           <TextLink href={next}>Continue as guest</TextLink>

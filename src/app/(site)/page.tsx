@@ -18,13 +18,14 @@ import {
 } from "@/features/destinations/lib";
 import { getAllTrips, getUpcomingDepartures } from "@/features/tours/api";
 import { DepartureBoard } from "@/features/tours/components/departure-board";
-import { isListable, monthLabel, toUpcomingBoardRow, vibeOptions } from "@/features/tours/mappers";
+import { TourCard, TourCompactCard } from "@/features/tours/components/tour-cards";
+import { isListable, monthLabel, toTourSummaries, toUpcomingBoardRow, vibeOptions } from "@/features/tours/mappers";
 import { formatINR, formatTicketDate } from "@/lib/format";
 import { BookingSteps, HeroSearch, WhyGhumbo } from "./_components/home-parts";
 
 export const metadata: Metadata = { alternates: { canonical: "/" } };
 
-// T01 Home. Catalog data is cached, so the whole page prerenders.
+// T01 Home: hero, Leaving soon, Pick a trip, then destinations. Catalog data is cached, so the whole page prerenders.
 export default async function Home() {
   "use cache";
   cacheLife("minutes");
@@ -37,6 +38,10 @@ export default async function Home() {
   // Hero ticket: a Ghumbo pick if there is one, else the next departure out.
   const pick = listable.find((t) => t.isRecommended);
   const heroTrip = pick ?? listable[0];
+  // "Pick a trip" leads ahead of the destination cards: Ghumbo picks first, then soonest out (catalog order).
+  const tripCards = toTourSummaries(
+    listable.toSorted((a, b) => Number(Boolean(b.isRecommended)) - Number(Boolean(a.isRecommended))),
+  ).slice(0, 6);
 
   // Destination cards: live places, with their trips grouped from the one catalog request, then coming-soon ones.
   const liveCountries = countries.filter((c) => c.status === "live");
@@ -60,15 +65,14 @@ export default async function Home() {
           <span className="type-label text-red">Just show up{priceFrom !== null && ` · from ${formatINR(priceFrom)}`}</span>
           <h1 className="m-0 mt-2 flex flex-col gap-3">
             <span className="text-[clamp(44px,6.4vw,88px)] font-extrabold leading-[0.95] tracking-[-0.03em] [font-stretch:125%]">
-              Group trips across India,
+              Travel more. Plan less.
             </span>
             <span className="text-[clamp(28px,3vw,40px)] font-extrabold leading-[1.05] tracking-[-0.02em] [font-stretch:125%]">
-              on fixed dates.
+              Pick a trip. Pack a bag. We’ll handle the rest.
             </span>
           </h1>
           <p className="m-0 mt-4 max-w-[52ch] type-body-l">
-            Pick a date and grab a seat in a group of up to 18. We sort the stays, transfers, permits and 4 am alarms. You
-            bring the playlist.
+            Fully planned trips across India, on fixed dates. Stays, transfers, permits and the 4 am alarm, all sorted.
           </p>
           <div className="mt-6">
             <HeroSearch
@@ -121,6 +125,27 @@ export default async function Home() {
         </section>
       )}
 
+      {tripCards.length > 0 && (
+        <section aria-labelledby="trips-h" className="page-container flex flex-col gap-4 py-7 md:gap-6 md:py-10">
+          <SectionHeader
+            kicker="Fully planned trips"
+            title={<span id="trips-h">Pick a trip</span>}
+            action={<TextLink href="/trips">All trips →</TextLink>}
+          />
+          {/* Desktop: six grid cards. Phones: the first four as compact cards, as on the canvas. */}
+          <div className="hidden grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-6 md:grid">
+            {tripCards.map((t) => (
+              <TourCard key={t.href} tour={t} />
+            ))}
+          </div>
+          <div className="flex flex-col gap-3 md:hidden">
+            {tripCards.slice(0, 4).map((t) => (
+              <TourCompactCard key={t.href} tour={t} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {places.length > 0 && (
         <section className="page-container flex flex-col gap-6 py-7 md:py-10">
           <SectionHeader kicker="Destinations" title="Where we go" action={<TextLink href="/destinations">All destinations →</TextLink>} />
@@ -145,7 +170,7 @@ export default async function Home() {
                 />
               );
             })}
-            {/* The design's waitlist card; there's no waitlist yet, so it opens the coming-soon page (T05). */}
+            {/* The design's waitlist card; it opens the coming-soon page (T05), which holds the waitlist. */}
             {soon.map((d) => (
               <DestinationTicket
                 key={d.id}
@@ -159,9 +184,9 @@ export default async function Home() {
                   ...(d.bestTime ? [{ label: "Best time", value: d.bestTime }] : []),
                   { label: "Trips", value: "Dates soon" },
                 ]}
-                priceLabel="First departures"
-                price="Dates soon"
-                cta={`See ${d.name} →`}
+                priceLabel="Waitlist"
+                price="Free to join"
+                cta="Join the waitlist →"
               />
             ))}
           </div>
