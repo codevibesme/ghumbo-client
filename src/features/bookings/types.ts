@@ -1,7 +1,7 @@
 import type { Asset } from "@/features/destinations/types";
 import type { TravelerGender } from "@/features/travelers/types";
 
-export type BookingStatus = "pending" | "confirmed" | "expired";
+export type BookingStatus = "pending" | "confirmed" | "expired" | "cancelled";
 export type RefundStatus = "pending" | "processed" | "failed";
 
 /** POST /billings/bookings body. `id` is a ULID made in the browser, so a double tap can't book twice. */
@@ -44,6 +44,13 @@ export type UserBooking = {
   paymentMethod: string | null;
   refundStatus: RefundStatus | null;
   refundAmount: string | null;
+  /** When the refund cleared at Razorpay (refund.processed). */
+  refundedAt: string | null;
+  /** Set when the traveller cancelled. */
+  cancelledAt: string | null;
+  cancellationReason: string | null;
+  /** What we kept, numeric string. */
+  cancellationFee: string | null;
   tripName: string;
   tripSlug: string;
   tripAsset: Asset | null;
@@ -52,4 +59,25 @@ export type UserBooking = {
   startDate: string;
   endDate: string;
   travelers: { id: string; firstName: string; lastName: string; gender: TravelerGender; dateOfBirth: string }[];
+};
+
+/** GET /billings/bookings/cancel/quote/:bookingId: what cancelling right now gives back. Numeric strings, rupees. */
+export type CancelQuote = {
+  bookingAmount: string;
+  refundAmount: string;
+  cancellationFee: string;
+  paymentMethod: string | null;
+};
+
+/** POST /billings/bookings/cancel body. */
+export type CancelBooking = {
+  bookingId: string;
+  /** Up to 100 characters. */
+  cancellationReason?: string;
+};
+
+/** POST /billings/bookings/cancel response. `refundId` is null when nothing comes back (under 7 days). */
+export type CancelResult = CancelQuote & {
+  bookingId: string;
+  refundId: string | null;
 };

@@ -18,6 +18,8 @@ import {
   VIEW_META,
   amountLabel,
   bookingView,
+  cancelledRefund,
+  money,
   firstNames,
   rebookHref,
 } from "@/features/bookings/lib";
@@ -87,8 +89,9 @@ export function BookingDetail({ id }: { id: string }) {
     <>
       {crumbs(b.code)}
       {view === "pending" && <Pending booking={b} onGone={retry} />}
-      {view === "confirmed" && <ConfirmedBooking booking={b} today={today} />}
+      {view === "confirmed" && <ConfirmedBooking booking={b} today={today} onCancelled={retry} />}
       {view === "expired" && <Expired booking={b} />}
+      {view === "cancelled" && <Cancelled booking={b} />}
     </>
   );
 }
@@ -202,6 +205,68 @@ function Expired({ booking: b }: { booking: UserBooking }) {
       <p className="m-0 type-small text-muted">
         Money left your account for this one? It comes back automatically in 5–7 working days. Still missing after that?
         Write to <a href={`mailto:${supportEmail}`}>{supportEmail}</a> and quote {b.code}.
+      </p>
+    </>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Cancelled by the traveller (layout of T13d)                          */
+/* ------------------------------------------------------------------ */
+
+function Cancelled({ booking: b }: { booking: UserBooking }) {
+  const refund = cancelledRefund(b);
+  const amount = money(refund.back, b.currency);
+  const story =
+    refund.back <= 0
+      ? "You cancelled this trip under 7 days before departure, so nothing came back."
+      : b.refundStatus === "processed"
+        ? `You cancelled this trip and ${amount} went back to ${refund.to}.`
+        : `You cancelled this trip. ${amount} is on its way to ${refund.to} and lands in 5–7 working days.`;
+  return (
+    <>
+      <section aria-labelledby="trip-h" className="flex flex-col overflow-hidden rounded-ticket border-[1.5px] border-tear bg-card">
+        <div className="flex flex-wrap justify-between gap-3 bg-rule px-5 py-3.5">
+          <span className="font-mono text-[12px] font-semibold tracking-[0.08em]">
+            {b.code} · BOOKED {formatStamp(b.createdAt).split(" · ")[0]}
+          </span>
+          {b.cancelledAt && (
+            <span className="font-mono text-[12px] font-semibold tracking-[0.08em]">
+              CANCELLED {formatStamp(b.cancelledAt)}
+            </span>
+          )}
+        </div>
+        <div className="flex flex-wrap items-center gap-x-10 gap-y-6 p-5 md:p-7">
+          <div className="flex min-w-0 flex-[1_1_420px] flex-col gap-3">
+            <Badge tone={VIEW_META.cancelled.tone}>{refund.badge}</Badge>
+            <h1 id="trip-h" className="m-0 type-h1 text-muted line-through decoration-2">
+              {b.tripName}
+            </h1>
+            <p className="m-0 max-w-[52ch] type-body-l text-muted">{story}</p>
+          </div>
+          <div className="flex flex-[0_1_320px] flex-col items-stretch gap-2.5">
+            <Link href={`/trips/${b.tripSlug}`} className={buttonClasses({ fullWidth: true, className: "h-14 text-[17px]" })}>
+              Find another date →
+            </Link>
+          </div>
+        </div>
+        <TearLine />
+        <dl className="m-0 grid grid-cols-2 gap-x-6 gap-y-5 px-5 pt-5 pb-6 md:grid-cols-4 md:px-7">
+          <Fact label="Dates" mono>
+            {formatTicketDate(b.startDate)} → {formatTicketDate(b.endDate)}
+          </Fact>
+          <Fact label={b.travelerCount === 1 ? "Traveller" : "Travellers"}>{firstNames(b)}</Fact>
+          <Fact label="Paid · charge" mono>
+            {amountLabel(b)} · −{money(Number(b.cancellationFee ?? 0), b.currency)}
+          </Fact>
+          <Fact label="Refund">
+            {refund.headline} · {refund.detail}
+          </Fact>
+        </dl>
+      </section>
+      <p className="m-0 type-small text-muted">
+        Refund not in your account after 7 working days? Write to <a href={`mailto:${supportEmail}`}>{supportEmail}</a> and
+        quote {b.code}.
       </p>
     </>
   );

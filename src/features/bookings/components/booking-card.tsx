@@ -7,7 +7,7 @@ import { buttonClasses } from "@/components/ui/variants";
 import { dateRange, formatShortDate, formatStamp } from "@/features/account/lib";
 import { shortName } from "@/features/tours/mappers";
 import { cn } from "@/lib/cn";
-import { amountLabel, bookingHref, daysUntil, departsIn, firstNames } from "../lib";
+import { amountLabel, bookingHref, cancelledRefund, daysUntil, departsIn, firstNames, travellersWord } from "../lib";
 import type { UserBooking } from "../types";
 import { HoldClock } from "./hold-banner";
 import { PayButton } from "./pay-button";
@@ -115,6 +115,33 @@ export function MissedRow({ booking: b }: { booking: UserBooking }) {
         </span>
         {b.refundStatus && <RefundLine booking={b} />}
       </div>
+      <Link href={bookingHref(b)} className="inline-flex min-h-11 items-center px-1 text-[15px] font-semibold text-link">
+        Details
+      </Link>
+    </article>
+  );
+}
+
+/** T12 · "Recently cancelled": struck-through trip, when it was cancelled, and where the refund is. */
+export function CancelledRow({ booking: b }: { booking: UserBooking }) {
+  const refund = cancelledRefund(b);
+  return (
+    <article className="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-ticket border-[1.5px] border-tear bg-card px-5 py-[18px]">
+      <div className="flex min-w-0 flex-[1_1_280px] flex-col gap-1">
+        <span className="text-[16px] font-bold leading-[1.25] text-muted line-through">
+          {shortName(b.tripName)} · {formatShortDate(b.startDate)}
+        </span>
+        <span className="font-mono text-[12px] font-medium uppercase leading-[1.3] tracking-[0.04em] text-muted">
+          {b.code}
+          {b.cancelledAt && ` · cancelled ${formatShortDate(b.cancelledAt)}`} · {travellersWord(b.travelerCount)}
+        </span>
+      </div>
+      <span className="flex flex-col items-end gap-1">
+        <span className={cn("font-mono text-[16px] font-bold leading-none", refund.back > 0 ? "text-green" : "text-muted")}>
+          {refund.headline}
+        </span>
+        <span className="text-[13px] leading-[1.3] text-muted">{refund.detail}</span>
+      </span>
       <Link href={bookingHref(b)} className="inline-flex min-h-11 items-center px-1 text-[15px] font-semibold text-link">
         Details
       </Link>

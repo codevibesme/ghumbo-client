@@ -7,6 +7,7 @@ import { buttonClasses } from "@/components/ui/variants";
 import { legalLinks } from "@/config/legal";
 import { supportEmail, supportPhone } from "@/config/site";
 import { formatShortDate, formatStamp } from "@/features/account/lib";
+import { CancelDialog } from "@/features/bookings/components/cancel-dialog";
 import { amountLabel, departsIn, money, paymentMethodLabel, perPerson, refundPreview, travellersWord } from "@/features/bookings/lib";
 import type { UserBooking } from "@/features/bookings/types";
 import { GENDER_LABEL, ageOn, travelerName } from "@/features/travelers/lib";
@@ -25,7 +26,16 @@ const cardTitle = "m-0 text-[22px] font-extrabold leading-[1.15] [font-stretch:1
  * Pickup point, stay, payment method and the invoice aren't in the booking
  * response yet, so those parts of the canvas are left out.
  */
-export function ConfirmedBooking({ booking: b, today }: { booking: UserBooking; today: string }) {
+export function ConfirmedBooking({
+  booking: b,
+  today,
+  onCancelled,
+}: {
+  booking: UserBooking;
+  today: string;
+  /** Reloads the booking once it has been cancelled. */
+  onCancelled: () => void;
+}) {
   const refund = refundPreview(b, today);
   const ended = b.endDate.slice(0, 10) < today;
   const packDay = shift(b.startDate, -7);
@@ -154,7 +164,10 @@ export function ConfirmedBooking({ booking: b, today }: { booking: UserBooking; 
         </section>
       )}
 
-      {!ended && <PlansChanged booking={b} refund={refund} />}
+      {/* Cancelling stops once the trip starts (the backend refuses from the start date). */}
+      {b.startDate.slice(0, 10) > today && (
+        <PlansChanged booking={b} refund={refund} today={today} onCancelled={onCancelled} />
+      )}
 
       <p className="m-0 text-[14px] leading-normal text-muted">
         Questions?{" "}
@@ -170,10 +183,20 @@ export function ConfirmedBooking({ booking: b, today }: { booking: UserBooking; 
 }
 
 /**
- * "Plans changed?": what cancelling today gives back. There's no cancel endpoint
- * yet, so "Cancel booking" opens an email to support with the code.
+ * "Plans changed?": roughly what cancelling today gives back. "Cancel booking"
+ * opens the cancel dialog, which quotes the exact refund from the backend.
  */
-function PlansChanged({ booking: b, refund }: { booking: UserBooking; refund: ReturnType<typeof refundPreview> }) {
+function PlansChanged({
+  booking: b,
+  refund,
+  today,
+  onCancelled,
+}: {
+  booking: UserBooking;
+  refund: ReturnType<typeof refundPreview>;
+  today: string;
+  onCancelled: () => void;
+}) {
   const back = money(refund.back, b.currency);
   return (
     <section
@@ -202,12 +225,16 @@ function PlansChanged({ booking: b, refund }: { booking: UserBooking; refund: Re
           <Link href={legalLinks.cancellation.href}>Refund rules</Link>
         </p>
       </div>
-      <a
-        href={`mailto:${supportEmail}?subject=${encodeURIComponent(`Cancel ${b.code}`)}`}
-        className={buttonClasses({ variant: "destructive", className: "h-12 px-5 text-[15px]" })}
-      >
-        Cancel booking
-      </a>
+      <CancelDialog
+        booking={b}
+        today={today}
+        onCancelled={onCancelled}
+        trigger={
+          <button type="button" className={buttonClasses({ variant: "destructive", className: "h-12 px-5 text-[15px]" })}>
+            Cancel booking
+          </button>
+        }
+      />
     </section>
   );
 }
