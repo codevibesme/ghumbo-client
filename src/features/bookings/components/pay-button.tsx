@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { supportEmail } from "@/config/site";
@@ -7,12 +8,12 @@ import { fullName, useSession } from "@/features/auth/session";
 import { ApiError } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { retryPayment } from "../api";
-import { goToRazorpay } from "../checkout";
+import { openRazorpay, paymentResultHref } from "../checkout";
 import type { UserBooking } from "../types";
 
 /**
- * "Pay ₹23,397" / "Retry payment" on an unpaid booking: fetches
- * the same Razorpay order again and hands off to Razorpay in this tab.
+ * "Pay ₹23,397" / "Retry payment" on an unpaid booking: fetches the Razorpay order again
+ * and opens Razorpay's panel on this page. Paid → the payment result page.
  * `onGone` runs when the backend says the booking can't be paid any more
  * (expired, or already paid), so the page can reload it.
  */
@@ -32,6 +33,7 @@ export function PayButton({
   className?: string;
 }) {
   const { user } = useSession();
+  const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,10 +42,11 @@ export function PayButton({
     setError(null);
     try {
       const order = await retryPayment(booking.id);
-      goToRazorpay(
+      await openRazorpay(
         order,
         { name: user ? fullName(user) : "", email: user?.email ?? null, contact: user?.phone ?? null },
         booking.tripName,
+        { paid: () => router.push(paymentResultHref(booking.id)), dismissed: () => setPending(false) },
       );
     } catch (err) {
       setPending(false);

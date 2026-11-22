@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-// B09 · where Razorpay's callback lands: /trips/<bookingId>/payment?status=success|failed|expired
-// (the backend picks the path). The segment is the booking id here, not a trip slug. The booking is
+// B09 · where a payment lands: Razorpay's panel sends paid bookings to /trips/<bookingId>/payment?status=success
+// (checkout.ts). The segment is the booking id here, not a trip slug. The booking is
 // read from the backend and polled; ?status only decides what to show while we wait.
 export default function PaymentPage({ params, searchParams }: PageProps<"/trips/[slug]/payment">) {
   return (
