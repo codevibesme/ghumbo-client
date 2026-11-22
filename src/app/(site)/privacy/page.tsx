@@ -8,14 +8,15 @@ import { supportEmail } from "@/config/site";
 export const metadata: Metadata = {
   title: "Privacy policy",
   description:
-    "What personal data Ghumbo collects when you request a seat or sign in, why, who we share it with, how long we keep it, and your rights under India’s DPDP Act.",
+    "What personal data Ghumbo collects when you sign in or book a trip, why, who we share it with, how long we keep it, and your rights under India’s DPDP Act.",
   alternates: { canonical: "/privacy" },
 };
 
 /*
- * Written from what the app actually does (6 Nov 2026): no analytics or ad
- * trackers; sign-in by email code or Google; cookies only for sign-in, Google's
- * sign-in check and the theme. Update this page when that changes.
+ * Written from what the app actually does (22 Nov 2026): instant booking with
+ * Razorpay checkout; no analytics or ad trackers; sign-in by email code or
+ * Google; cookies only for sign-in, Google's sign-in check and the theme.
+ * Update this page when that changes.
  */
 
 const DATA: { what: ReactNode; why: string }[] = [
@@ -24,15 +25,19 @@ const DATA: { what: ReactNode; why: string }[] = [
     why: "To create your account, sign you in and show you your trips.",
   },
   {
-    what: "Seat requests: your name, email, mobile number, the trip and date, how many are travelling and any message",
-    why: "To call you, hold seats, confirm rooms and send you updates about that request.",
+    what: "Saved travellers: each person’s name as on their ID, date of birth and gender",
+    why: "To book seats in their names, pair room-mates (gender only) and pass names to hotels and permit checks.",
+  },
+  {
+    what: "Bookings: the trip, date, travellers, amount and booking status, and your mobile number if you add one",
+    why: "To hold and confirm your seats, send your confirmation and trip pack, and let your coordinator reach you.",
   },
   {
     what: "Payments: the amount, date, method (for example UPI) and the payment provider’s reference",
-    why: "To confirm your seat, issue invoices and make refunds. Card numbers, bank logins and UPI PINs stay with the payment provider; we never see them.",
+    why: "To confirm your booking, issue invoices and make refunds. Card numbers, bank logins and UPI PINs stay with Razorpay; we never see them.",
   },
   {
-    what: "What you tell us on calls, like room sharing or food needs",
+    what: "What you tell us by email or phone, like food needs",
     why: "To plan your trip. We note only what we need for it.",
   },
   {
@@ -47,7 +52,7 @@ const BROWSER: { name: string; what: string; kept: string }[] = [
   { name: "ghumbo_oauth_state", what: "Cookie that protects Google sign-in", kept: "10 minutes" },
   { name: "ghumbo-theme", what: "Cookie that remembers light or dark mode, if you pick one", kept: "1 year" },
   { name: "ghumbo_device, ghumbo_signed_in", what: "Browser storage: a random device ID for your sessions, and a sign-in hint", kept: "Until you sign out or clear it" },
-  { name: "ghumbo_otp, ghumbo_next, ghumbo_req", what: "Browser storage for the sign-in step and the request you just sent", kept: "Until you close the tab" },
+  { name: "ghumbo_otp, ghumbo_next", what: "Browser storage for the sign-in step and the page to return to", kept: "Until you close the tab" },
 ];
 
 const tableHead = "px-4 py-3 type-stub text-muted";
@@ -65,7 +70,7 @@ const sections: LegalSection[] = [
           (DPDP Act), we are the data fiduciary for the personal data described here.
         </p>
         <p>
-          This policy covers ghumbo.com, our emails and our calls with you. For questions, write to{" "}
+          This policy covers ghumbo.com, our emails, and any calls or messages with you. For questions, write to{" "}
           <a href={`mailto:${supportEmail}`}>{supportEmail}</a>.
         </p>
       </>
@@ -100,8 +105,8 @@ const sections: LegalSection[] = [
           </table>
         </div>
         <p>
-          We don’t ask for ID documents to request a seat. If a trip needs them later, for a permit or a hotel
-          check-in, we ask then and say why. We don’t use analytics or advertising trackers, and we never sell or rent
+          We don’t ask you to upload ID documents to book. Travellers show their ID at hotel check-in and for permits on
+          the trip; if a trip needs a copy in advance, we ask then and say why. We don’t use analytics or advertising trackers, and we never sell or rent
           personal data.
         </p>
       </>
@@ -112,7 +117,7 @@ const sections: LegalSection[] = [
     title: "Your consent",
     body: (
       <p>
-        We process your data with your consent, which you give when you sign in or send a seat request, and for things
+        We process your data with your consent, which you give when you sign in or book a trip, and for things
         the law requires, like keeping tax records. You can withdraw consent at any time by writing to{" "}
         <a href={`mailto:${supportEmail}`}>{supportEmail}</a>, as easily as you gave it. We then stop, except for what
         the law still requires us to keep. Withdrawing doesn’t undo what we did before, and we may not be able to run a
@@ -172,7 +177,8 @@ const sections: LegalSection[] = [
             <strong>Amazon Web Services</strong> and our other hosting providers, which run our servers and database.
           </li>
           <li>
-            <strong>Our payment provider</strong>, which takes your payment and handles refunds.
+            <strong>Razorpay</strong>, our payment provider, which takes your payment on its secure checkout and
+            handles refunds.
           </li>
           <li>
             <strong>Hotels, transport operators and your trip coordinator</strong>: travellers’ names and a mobile
@@ -196,7 +202,7 @@ const sections: LegalSection[] = [
     body: (
       <ul>
         <li>Your account: until you ask us to delete it.</li>
-        <li>Seat requests and bookings: 3 years after the trip date, in case of questions or disputes.</li>
+        <li>Bookings and saved travellers: 3 years after the trip date, in case of questions or disputes. Saved travellers you remove, and who aren’t on a booking, are deleted straight away.</li>
         <li>Payment and invoice records: 8 years, as Indian tax and company law requires.</li>
         <li>Sign-in records: 1 year.</li>
         <li>Sign-in codes: stored in a scrambled (hashed) form and deleted within 5 minutes.</li>
@@ -230,8 +236,8 @@ const sections: LegalSection[] = [
     title: "Children",
     body: (
       <p>
-        Our trips are for adults. You must be 18 or older to sign in or request a seat. A parent or guardian must book
-        for anyone under 18 who travels with them, and gives consent for that child’s data.
+        Our trips are for adults. You must be 18 or older to sign in or book. A parent or guardian must book for anyone
+        under 18 who travels with them, and gives consent for that child’s data.
       </p>
     ),
   },
@@ -271,7 +277,7 @@ export default function PrivacyPage() {
       current="privacy"
       kicker="Policies · your data"
       title="Privacy policy"
-      lede="What we collect when you request a seat or sign in, why, who sees it, and how to have it corrected or deleted. No analytics, no ad trackers, never sold."
+      lede="What we collect when you sign in or book a trip, why, who sees it, and how to have it corrected or deleted. No analytics, no ad trackers, never sold."
       sections={sections}
     />
   );

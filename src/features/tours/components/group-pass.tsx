@@ -16,7 +16,7 @@ export function GroupPass({
   from,
   to,
   departure,
-  requestHref,
+  bookHref,
   changeHref,
   ground,
   className,
@@ -24,7 +24,7 @@ export function GroupPass({
   from: string;
   to: string;
   departure: Departure;
-  requestHref: string;
+  bookHref: string;
   /** "Change date" link target (the departure chooser), when the pass sits away from it. */
   changeHref?: string;
   /** Surface behind the pass (fills the notches). */
@@ -34,7 +34,7 @@ export function GroupPass({
   const field = "flex min-w-0 flex-col gap-1.5";
   const sub = "font-mono text-[12px] leading-none text-muted uppercase";
   return (
-    <aside aria-label="Group pass" className={cn("ticket-surface flex flex-col", className)}>
+    <aside aria-label="Your pass" className={cn("ticket-surface flex flex-col", className)}>
       <div className="flex items-center justify-between rounded-t-[4.5px] bg-passport px-5 py-3.5 text-on-passport">
         <span className="font-mono text-[12px] font-semibold leading-none tracking-[0.08em]">GROUP PASS</span>
         <Logo tone="stock" ground="var(--g-passport)" className="w-[104px]" />
@@ -83,7 +83,7 @@ export function GroupPass({
       <TearLine ground={ground} />
       <div className="flex flex-col gap-2.5 px-5 py-4">
         <div className="flex items-baseline justify-between gap-3">
-          <span className="text-[15px] leading-[1.3]">Adult, twin sharing</span>
+          <span className="text-[15px] leading-[1.3]">Per person, twin sharing</span>
           <span className="font-mono text-[16px] font-semibold leading-none">{formatINR(departure.price)}</span>
         </div>
         <div className="flex gap-1.5 pt-1">
@@ -92,11 +92,11 @@ export function GroupPass({
         </div>
       </div>
       <div className="flex flex-col gap-2.5 px-5 pb-5">
-        <Link href={requestHref} className={buttonClasses({ fullWidth: true })}>
-          Request my seat →
+        <Link href={bookHref} className={buttonClasses({ fullWidth: true })}>
+          Grab my seat →
         </Link>
         <span className="text-center font-mono text-[12px] font-medium leading-[1.4] tracking-[0.04em] text-muted">
-          NO PAYMENT NOW · WE CALL WITHIN 24 HOURS
+          PAY ONLINE · SEATS HELD FOR 10 MINUTES
         </span>
       </div>
     </aside>

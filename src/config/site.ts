@@ -7,7 +7,7 @@ export const mainNav: { key: NavKey; label: string; href: string }[] = [
   { key: "how-it-works", label: "How it works", href: "/how-it-works" },
 ];
 
-export const footerTagline = "Just show up. Fixed-date group trips across India.";
+export const footerTagline = "Just show up. Fully planned trips across India.";
 
 /** From NEXT_PUBLIC_GHUMBO_SUPPORT_EMAIL (the backend's GHUMBO_SUPPORT_EMAIL); support@ghumbo.com if unset. */
 export const supportEmail = process.env.NEXT_PUBLIC_GHUMBO_SUPPORT_EMAIL?.trim() || "support@ghumbo.com";

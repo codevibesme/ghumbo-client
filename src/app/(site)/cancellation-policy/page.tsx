@@ -29,8 +29,8 @@ const sections: LegalSection[] = [
     title: "The short version",
     body: (
       <ul>
-        <li>Requesting a seat is free. You pay the full trip cost by secure link after our call, and your seat is confirmed once it’s paid.</li>
-        <li>Until you pay, you can withdraw at no cost.</li>
+        <li>You pay the full trip cost at checkout, and your booking is confirmed the moment the payment clears.</li>
+        <li>Unpaid bookings cost nothing: if you don’t pay within the 10-minute hold, the booking simply expires.</li>
         <li>After you pay, what we keep depends on how close to departure you cancel: from 10% (30 or more days before) to 100% (under 7 days).</li>
         <li>Seats can’t be handed to someone else.</li>
         <li>If we cancel, you choose: a full refund, or a free move to another date.</li>
@@ -42,11 +42,18 @@ const sections: LegalSection[] = [
     id: "before-you-pay",
     title: "Before you pay",
     body: (
-      <p>
-        A seat request is not a booking and costs nothing. You can withdraw it from{" "}
-        <Link href="/my-trips">My trips</Link>, or tell us on the call or at {contact}. If you don’t pay the link we send
-        after the call, the request lapses and the seat goes back on sale.
-      </p>
+      <>
+        <p>
+          When you press Pay at checkout we hold your seats for 10 minutes while you pay on Razorpay’s secure page.
+          Nothing is charged until the payment goes through. If you don’t finish paying in time, the booking expires,
+          the seats go back on sale and there’s nothing to cancel. You can start a new booking from{" "}
+          <Link href="/my-trips">My trips</Link>.
+        </p>
+        <p>
+          If money leaves your account after a booking has expired, we confirm the seats if they’re still free. If they
+          aren’t, we refund the full amount automatically, within {REFUND_WORKING_DAYS} working days.
+        </p>
+      </>
     ),
   },
   {
@@ -88,9 +95,10 @@ const sections: LegalSection[] = [
             Percentages are of the trip cost for the seats you cancel, taxes included. We don’t add any other fee.
           </li>
           <li>
-            Days are counted to the first day of the trip, from the day we receive your cancellation in writing: email{" "}
-            <a href={`mailto:${supportEmail}`}>{supportEmail}</a> from the address you booked with, and quote your
-            reference.
+            Cancel from the booking in <Link href="/my-trips">My trips</Link>, or email{" "}
+            <a href={`mailto:${supportEmail}`}>{supportEmail}</a> from the address you booked with and quote your booking
+            code (for example GH-K7Q4MX). Days are counted to the first day of the trip, from the day we receive your
+            cancellation. Each booking in My trips shows what you’d get back if you cancelled today.
           </li>
           <li>
             Cancelling some of the seats on a booking works the same way, for those seats only. If it leaves someone in
@@ -218,7 +226,7 @@ export default function CancellationPolicyPage() {
       current="cancellation"
       kicker="Policies · cancellation and refunds"
       title="Cancellation policy"
-      lede="What happens if you cancel, or if we do. Nothing is charged until you pay after our call, so a seat request costs nothing to withdraw."
+      lede="What happens if you cancel, or if we do. Unpaid bookings cost nothing; once you’ve paid, what you get back depends on how close to departure you cancel."
       sections={sections}
     />
   );

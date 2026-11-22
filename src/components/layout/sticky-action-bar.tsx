@@ -3,9 +3,9 @@ import { buttonClasses } from "@/components/ui/variants";
 import { cn } from "@/lib/cn";
 
 /**
- * Mobile sticky action bar on tour + request pages: 80px, card ground, 1.5px
+ * Mobile sticky action bar on tour + checkout pages: 80px, card ground, 1.5px
  * ink top rule, meta + price on the left, full-width primary L on the right.
- * Pass `href` for a link, or `form` to submit that form (the request page).
+ * Pass `href` for a link, or `form` to submit that form (checkout).
  */
 export function StickyActionBar({
   meta,
@@ -13,7 +13,7 @@ export function StickyActionBar({
   href,
   form,
   disabled,
-  label = "Request my seat →",
+  label = "Grab my seat →",
   note,
   metaBelow,
   className,
@@ -23,9 +23,9 @@ export function StickyActionBar({
   /** "₹9,499" */
   price: string;
   label?: string;
-  /** One centred mono line above the row ("NO PAYMENT NOW · WE CALL WITHIN 24 HOURS"). */
+  /** One centred mono line above the row ("SEATS HELD FOR 10 MINUTES · SECURE PAYMENT"). */
   note?: string;
-  /** Price first, meta under it ("₹7,799 / PER PERSON"), as on the request page. */
+  /** Price first, meta under it ("₹7,799 / PER PERSON"), as at checkout. */
   metaBelow?: boolean;
   className?: string;
 } & ({ href: string; form?: never; disabled?: never } | { form: string; href?: never; disabled?: boolean })) {

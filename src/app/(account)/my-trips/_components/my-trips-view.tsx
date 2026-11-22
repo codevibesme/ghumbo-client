@@ -6,34 +6,29 @@ import { useState } from "react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Kicker } from "@/components/ui/section-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TextLink } from "@/components/ui/text-link";
 import { buttonClasses } from "@/components/ui/variants";
-import { useMyRequests, useSignedInUser } from "@/features/account/hooks";
-import { type TripGroups, groupRequests } from "@/features/account/lib";
+import { useSignedInUser } from "@/features/account/hooks";
 import { fullName } from "@/features/auth/session";
-import { RequestCard } from "@/features/booking-requests/components/request-card";
-import type { UserBookingRequest } from "@/features/booking-requests/types";
+import { BookingCard, MissedRow, PendingCard } from "@/features/bookings/components/booking-card";
+import { useMyBookings, useNow } from "@/features/bookings/hooks";
+import { type BookingGroups, groupBookings } from "@/features/bookings/lib";
 import { useToday } from "@/lib/use-today";
 
-type Tab = keyof TripGroups;
+type Tab = "upcoming" | "past";
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: "requests", label: "Requests" },
-  { id: "upcoming", label: "Upcoming" },
-  { id: "past", label: "Past" },
-];
-
-const seeDepartures = (
+const findTrip = (
   <Link href="/trips" className={buttonClasses({ variant: "secondary", size: "m" })}>
-    See departures
+    Find a trip
   </Link>
 );
 
+// T12 / T12b My trips: unpaid bookings (with their hold timer) on top, then upcoming trips, then holds that ran out.
 export function MyTripsView() {
   const user = useSignedInUser("/my-trips");
   const today = useToday();
-  const { result, retry } = useMyRequests(Boolean(user));
-  const [tab, setTab] = useState<Tab>("requests");
+  const now = useNow();
+  const { result, retry } = useMyBookings(Boolean(user));
+  const [tab, setTab] = useState<Tab>("upcoming");
 
   return (
     <>
@@ -42,10 +37,12 @@ export function MyTripsView() {
           <Kicker>{user ? `Passenger · ${fullName(user)}` : "Passenger"}</Kicker>
           <h1 className="m-0 type-h1">My trips</h1>
         </div>
-        <TextLink href="/trips">Browse trips →</TextLink>
+        <Link href="/trips" className="py-3.5 text-[15px] font-semibold leading-none text-link">
+          Find another trip →
+        </Link>
       </div>
 
-      {!user || !today || result.status === "loading" ? (
+      {!user || !today || now === null || result.status === "loading" ? (
         <div className="flex min-h-80 flex-col gap-6" aria-busy="true">
           <span className="sr-only">Loading your trips…</span>
           <div className="h-12 border-b-[1.5px] border-line" />
@@ -63,70 +60,94 @@ export function MyTripsView() {
             </button>
           }
         >
-          Your requests are safe. This one’s on our side; give it a moment and try again.
+          Your bookings are safe. This one’s on our side; give it a moment and try again.
         </EmptyState>
       ) : (
-        <TripTabs groups={groupRequests(result.data, today)} tab={tab} onTab={setTab} />
+        <TripTabs groups={groupBookings(result.data, today, now)} today={today} tab={tab} onTab={setTab} onChange={retry} />
       )}
     </>
   );
 }
 
-function TripTabs({ groups, tab, onTab }: { groups: TripGroups; tab: Tab; onTab: (t: Tab) => void }) {
+function TripTabs({
+  groups,
+  today,
+  tab,
+  onTab,
+  onChange,
+}: {
+  groups: BookingGroups;
+  today: string;
+  tab: Tab;
+  onTab: (t: Tab) => void;
+  onChange: () => void;
+}) {
+  const upcomingCount = groups.pending.length + groups.upcoming.length;
   return (
     <Tabs value={tab} onValueChange={(v) => onTab(v as Tab)} className="flex flex-col gap-6">
       <TabsList aria-label="My trips">
-        {TABS.map((t) => (
-          <TabsTrigger key={t.id} value={t.id}>
-            {t.label} ({groups[t.id].length})
-          </TabsTrigger>
-        ))}
+        <TabsTrigger value="upcoming">Upcoming{upcomingCount ? ` · ${upcomingCount}` : ""}</TabsTrigger>
+        <TabsTrigger value="past">Past{groups.past.length ? ` · ${groups.past.length}` : ""}</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="requests" className="flex flex-col gap-6">
-        <p className="m-0 type-body text-muted">No payment now. We call within 24 hours of every request.</p>
-        {groups.requests.length ? (
-          <CardList list={groups.requests} />
-        ) : (
-          <EmptyState icon={<Ticket size={22} aria-hidden />} title="No requests yet" action={seeDepartures}>
-            Pick a departure and request a seat. We call you within 24 hours, and nothing is paid until you say yes.
-          </EmptyState>
-        )}
-      </TabsContent>
-
       <TabsContent value="upcoming" className="flex flex-col gap-6">
-        <p className="m-0 type-body text-muted">Trips with a booked seat. Your trip pack arrives 7 days before you leave.</p>
+        {groups.pending.length > 0 && (
+          <ul className="m-0 flex list-none flex-col gap-4 p-0" aria-label="Waiting for payment">
+            {groups.pending.map((b) => (
+              <li key={b.id}>
+                <PendingCard booking={b} onGone={onChange} />
+              </li>
+            ))}
+          </ul>
+        )}
+
         {groups.upcoming.length ? (
-          <CardList list={groups.upcoming} />
+          <ul className="m-0 flex list-none flex-col gap-6 p-0">
+            {groups.upcoming.map((b) => (
+              <li key={b.id}>
+                <BookingCard booking={b} today={today} />
+              </li>
+            ))}
+          </ul>
         ) : (
-          <EmptyState icon={<Ticket size={22} aria-hidden />} title="No upcoming trips" action={seeDepartures}>
-            Confirmed trips show up here once your seat is booked.
-          </EmptyState>
+          groups.pending.length === 0 && (
+            <EmptyState icon={<Ticket size={22} aria-hidden />} title="No trips booked yet" action={findTrip}>
+              Pick a trip, pay for your seat, and it shows up here with everything you need. Then just show up.
+            </EmptyState>
+          )
+        )}
+
+        {groups.missed.length > 0 && (
+          <section aria-labelledby="missed-h" className="flex flex-col gap-3">
+            <h2 id="missed-h" className="m-0 type-stub text-muted">
+              Didn’t go through
+            </h2>
+            <ul className="m-0 flex list-none flex-col gap-3 p-0">
+              {groups.missed.slice(0, 5).map((b) => (
+                <li key={b.id}>
+                  <MissedRow booking={b} />
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
       </TabsContent>
 
       <TabsContent value="past" className="flex flex-col gap-6">
-        <p className="m-0 type-body text-muted">Trips you’ve travelled, and requests that were withdrawn or closed.</p>
         {groups.past.length ? (
-          <CardList list={groups.past} />
+          <ul className="m-0 flex list-none flex-col gap-6 p-0">
+            {groups.past.map((b) => (
+              <li key={b.id}>
+                <BookingCard booking={b} today={today} past />
+              </li>
+            ))}
+          </ul>
         ) : (
-          <EmptyState icon={<Ticket size={22} aria-hidden />} title="No past trips yet" action={seeDepartures}>
+          <EmptyState icon={<Ticket size={22} aria-hidden />} title="No past trips yet" action={findTrip}>
             Your stamps show up here after your first trip. The hills are waiting.
           </EmptyState>
         )}
       </TabsContent>
     </Tabs>
-  );
-}
-
-function CardList({ list }: { list: UserBookingRequest[] }) {
-  return (
-    <ul className="m-0 flex list-none flex-col gap-6 p-0">
-      {list.map((r) => (
-        <li key={r.id}>
-          <RequestCard request={r} />
-        </li>
-      ))}
-    </ul>
   );
 }

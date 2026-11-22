@@ -6,7 +6,7 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { SectionHeader } from "@/components/ui/section-header";
 import { TearLine } from "@/components/ui/tear-line";
 import { buttonClasses } from "@/components/ui/variants";
-import { business, cancellationSummary, legalLinks } from "@/config/legal";
+import { business, legalLinks } from "@/config/legal";
 import { supportEmail, supportPhone } from "@/config/site";
 import { getAllTrips } from "@/features/tours/api";
 import { RouteLine } from "@/features/tours/components/route-line";
@@ -15,26 +15,24 @@ import { cn } from "@/lib/cn";
 import { formatINR } from "@/lib/format";
 
 /*
- * T07 How it works. Static copy from the canvas, with three changes forced by
- * product decisions: no child fares, no "I'm flexible", and sign-in is Google or
- * email only, and the trip is paid in full after the call (no deposit, no
- * balance). The support phone and business name come from the env; values the
- * canvas leaves open ([Single supplement] …) stay as its own placeholders until
- * we have them. Trip count and lowest price come from the
- * catalog.
+ * T07 How it works. Static copy from the canvas (instant checkout, 21 Nov 2026).
+ * There are no child fares (one price per seat, decided 22 Nov 2026), so the
+ * canvas's child-price lines are left out. The canvas's first FAQ still describes the
+ * retired pay-by-link flow; it's rewritten here for Razorpay checkout. The
+ * support phone and business name come from the env; values the canvas leaves
+ * open ([Single supplement] …) stay as its own placeholders until we have them.
+ * Trip count and lowest price come from the catalog.
  */
-
-const UPDATED = { iso: "2026-10-28", label: "28 Oct 2026" };
 
 export async function generateMetadata(): Promise<Metadata> {
   const trips = (await getAllTrips()).filter(isListable);
   const cover = trips[0]?.asset;
   return {
-    title: "How Ghumbo group trips work",
+    title: "How Ghumbo works",
     description:
-      "Pick a fixed-date group trip, request a seat in two minutes and we call you within 24 hours. No payment until we’ve talked, and never over the phone.",
+      "Pick a date, pay for your seat online and just show up. Fully planned trips across India: stays, transfers, permits and a coordinator, all sorted.",
     alternates: { canonical: "/how-it-works" },
-    openGraph: cover ? { images: [{ url: cover.url, alt: cover.label ?? "A Ghumbo group trip" }] } : undefined,
+    openGraph: cover ? { images: [{ url: cover.url, alt: cover.label ?? "A Ghumbo trip" }] } : undefined,
   };
 }
 
@@ -42,7 +40,7 @@ const STEPS: { kicker: string; title: string; body: string; points: string[]; no
   {
     kicker: "Pick a departure",
     title: "Choose a trip and a fixed date",
-    body: "Every trip leaves on set dates with a set plan. Each departure shows the price and how many seats are left in the group.",
+    body: "Every trip leaves on set dates with a set plan. Each departure shows the price and how many seats are left.",
     points: [
       "Prices are per person, twin sharing, taxes included",
       "Couples share a room (ask for a double bed) and pay per person",
@@ -50,21 +48,21 @@ const STEPS: { kicker: string; title: string; body: string; points: string[]; no
     ],
   },
   {
-    kicker: "Request your seat",
-    title: "Tell us who’s coming",
-    body: "A short form: your name, email, mobile, how many of you and the date.",
-    points: ["No card details, no account needed", "Sign in if you want to track the request", "We hold nothing until we talk"],
-    note: "NO PAYMENT NOW · WE CALL WITHIN 24 HOURS",
+    kicker: "Pay for your seat",
+    title: "Tick your travellers, pay once",
+    body: "Sign in, tick who’s coming and pay by UPI, card or netbanking. We hold your seats for 10 minutes while you pay.",
+    points: ["UPI, cards and netbanking via Razorpay", "Seats confirmed the moment you pay", "Invoice in your inbox right after"],
+    note: "90% BACK IF YOU CANCEL 30+ DAYS OUT",
   },
   {
-    kicker: "We call, you confirm",
-    title: "A real person calls you",
-    body: `Someone from Ghumbo calls${supportPhone ? ` from ${supportPhone.display}` : ""}, answers your questions and sorts your room. Then we email a secure link from billing@mail.ghumbo.com to pay for the trip in full. Your seat is confirmed once it’s paid.`,
+    kicker: "Show up",
+    title: "We handle the rest",
+    body: "Your trip pack lands 7 days before you leave: pickup point, your coordinator’s number and a packing list. On day one, your coordinator meets you at the station.",
     points: [
-      "Room sharing sorted on the call",
-      "One payment, in full, once you’re sure",
+      "Room-mates matched by gender, or pay for a solo room",
+      supportPhone ? `Questions? Call ${supportPhone.display} any time` : `Questions? Write to ${supportEmail} any time`,
       "Your trip pack lands 7 days before you leave",
-      "Meet the group at the hub on day one",
+      "Meet your coordinator at the hub on day one",
     ],
   },
 ];
@@ -73,7 +71,7 @@ const FINE_PRINT = [
   {
     icon: CalendarDays,
     title: "What’s a fixed departure?",
-    body: "A trip that leaves on a set date with a set plan, whether you come with friends or alone. You join a group, so stays, jeeps and a coordinator cost less per head.",
+    body: "A trip that leaves on a set date with a set plan, whether you come with friends or alone. Seats are shared, so stays, jeeps and a coordinator cost less per head.",
   },
   {
     icon: UserRound,
@@ -82,8 +80,8 @@ const FINE_PRINT = [
   },
   {
     icon: UsersRound,
-    title: "How big are the groups?",
-    body: "Up to 18 travellers plus a Ghumbo coordinator. Treks like Sandakphu cap at 14. Small enough to know everyone by day two.",
+    title: "How do refunds work?",
+    body: "Cancel from My trips any time. 30+ days out you get 90% back, 15–29 days 50%, 7–14 days 25%, under 7 days nothing. Refunds land in 5–7 working days.",
   },
 ];
 
@@ -99,41 +97,41 @@ const IN_EVERY_TRIP = [
 const NEVER_INCLUDED = ["Train or flight to the hub", "Meals not listed", "Optional add-ons", "Tips and travel insurance"];
 
 const MONEY = [
-  { step: "Step 1 · the call", amount: "₹0", mono: true, body: "We confirm the date and room sharing, and answer every question." },
+  { step: "Step 1 · book", amount: "Full price", mono: true, body: "Pay the full trip price online. Seats confirmed instantly, invoice by email." },
   {
-    step: "Step 2 · pay in full",
-    amount: "100%",
+    step: "Step 2 · if plans change",
+    amount: "90% back",
     mono: true,
-    body: `The whole trip cost, by secure link to ${business.name}, never to a personal account. Paid means confirmed; unpaid means the seat isn’t yours yet.`,
+    body: "Cancel 30+ days out from My trips. 50% back at 15–29 days, 25% at 7–14.",
   },
   {
-    step: "Step 3 · just show up",
-    amount: "Nothing more",
+    step: "Step 3 · if we cancel",
+    amount: "100% back",
     mono: false,
-    body: "Everything in the ticket is paid for. Only meals not listed and optional add-ons are paid on the trip.",
+    body: "Every rupee back within 7 working days, or a free move to another date. Your pick.",
   },
 ];
 
 const FAQS: { q: string; a: string; link?: { label: string; href: string } }[] = [
   {
     q: "How do I pay, and how do I know it’s really you?",
-    a: `After our call we email a secure payment link from billing@mail.ghumbo.com. The payee is ${business.name}. We never ask for an OTP, card details or a transfer to a personal account over the phone. If anyone does, hang up and ${supportPhone ? `call ${supportPhone.display}` : `write to ${supportEmail}`}.`,
+    a: `You pay on Razorpay’s secure checkout when you book, and the payee is ${business.name}. Your receipt and invoice come from billing@mail.ghumbo.com. We never ask for an OTP, card details or a transfer to a personal account over the phone. If anyone does, hang up and ${supportPhone ? `call ${supportPhone.display}` : `write to ${supportEmail}`}.`,
   },
   {
-    q: "Do I need an account to request a seat?",
-    a: "No. Anyone can request a seat as a guest. Sign in with Google or your email if you want to follow your requests in My trips.",
+    q: "Do I need an account to book?",
+    a: "Yes, a quick one. Sign in with Google, your phone or email. No passwords. It keeps your travellers, bookings and invoices in one place.",
   },
   {
     q: "Is the train or flight to the start point included?",
-    a: "No. Trips are land only. They start and end at a hub: New Jalpaiguri (NJP) or Bagdogra (IXB) for the hills, Kolkata or Howrah for the south, Port Blair (IXZ) for the Andamans, where the island ferries are included. We share the meeting time so you can plan.",
+    a: "No. Trips are land only. They start and end at a hub: New Jalpaiguri (NJP) or Bagdogra (IXB) for the hills, Kolkata (Howrah / Sealdah) for the south, Port Blair (IXZ) for the Andamans. We share the meeting time so you can plan.",
   },
   {
     q: "What does twin sharing mean?",
-    a: "Two people to a room. Couples share one room and each pays the per-person price. Solo travellers share with someone of the same gender.",
+    a: "Two people to a room. Couples share one room and each pays the adult price. Solo travellers share with someone of the same gender.",
   },
   {
     q: "Can I bring a child?",
-    a: "Yes. Mention them in the message when you request a seat, and we confirm their fare and the room on the call.",
+    a: "Yes. Add them as travellers with their date of birth so we plan the room. Everyone pays the same price per seat.",
   },
   {
     q: "Why do some dates cost more?",
@@ -141,12 +139,12 @@ const FAQS: { q: string; a: string; link?: { label: string; href: string } }[] =
   },
   {
     q: "What if I need to cancel?",
-    a: cancellationSummary,
+    a: "30+ days out: 90% back. 15–29 days: 50%. 7–14 days: 25%. Under 7 days or no-show: no refund. Cancel from My trips; refunds land in 5–7 working days.",
     link: { label: `Read the full ${legalLinks.cancellation.label.toLowerCase()}`, href: legalLinks.cancellation.href },
   },
   {
     q: "Who is the coordinator?",
-    a: "A Ghumbo team member who travels with the group and handles tickets, timings and the early starts. You get their name and number in your trip pack.",
+    a: "A Ghumbo team member who travels with you and handles tickets, timings and the early starts. You get their name and number in your trip pack.",
   },
   {
     q: "How do I reach you?",
@@ -184,8 +182,8 @@ export default async function HowItWorksPage() {
               <h1 className="m-0 type-h1">Pick a date. We sort the rest.</h1>
             </div>
             <p className="m-0 max-w-[52ch] type-body-l">
-              Every Ghumbo trip runs on fixed dates with a small group. You request a seat, we call you, and the only thing
-              left to plan is your playlist. No payment until we’ve talked, and never over the phone.
+              Every Ghumbo trip runs on fixed dates with the whole plan done. Pick a date, pay for your seat, and the only
+              thing left to plan is your playlist.
             </p>
           </div>
           <div className="flex flex-wrap gap-3 *:flex-[1_1_100%] md:*:flex-none">
@@ -261,7 +259,7 @@ export default async function HowItWorksPage() {
             </h2>
           </div>
           <span className="font-mono text-[12px] font-medium leading-[1.4] tracking-[0.04em] text-board-label">
-            NO PAYMENT UNTIL WE’VE TALKED · NEVER OVER THE PHONE
+            ONE PAYMENT · TAXES INCLUDED · NO BOOKING FEE
           </span>
         </div>
         <ol className="m-0 grid list-none gap-4 p-0 md:grid-cols-3">
@@ -303,9 +301,6 @@ export default async function HowItWorksPage() {
               <Mail size={18} aria-hidden /> {supportEmail}
             </a>
           </div>
-          <span className="font-mono text-[12px] leading-none tracking-[0.04em] text-muted">
-            UPDATED <time dateTime={UPDATED.iso}>{UPDATED.label.toUpperCase()}</time>
-          </span>
         </div>
         {/* <details> keeps every answer in the server HTML (AGENTS.md SEO rule). */}
         <div className="border-b-2 border-dashed border-tear">
@@ -355,9 +350,9 @@ export default async function HowItWorksPage() {
 function TripPass() {
   const facts = [
     ["Form", "2 minutes"],
-    ["Payment now", "₹0"],
-    ["We call", "Within 24 hours"],
-    ["Group", "Up to 18"],
+    ["Booking fee", "₹0"],
+    ["Seats held", "10 min while you pay"],
+    ["Refund", "90% · 30+ days out"],
   ];
   return (
     <div className="ticket-surface flex min-w-0 flex-col max-[959px]:max-w-[460px]">
@@ -366,7 +361,7 @@ function TripPass() {
         <Logo tone="stock" ground="var(--g-passport)" className="w-[96px]" />
       </div>
       <div className="p-5">
-        <RouteLine stops={["Pick", "Request", "Call", "Go"]} className="[&_span[aria-hidden]]:max-w-none" />
+        <RouteLine stops={["Pick", "Pay", "Pack", "Go"]} className="[&_span[aria-hidden]]:max-w-none" />
       </div>
       <TearLine />
       <dl className="m-0 grid grid-cols-2 gap-4 px-5 pt-[18px] pb-5">

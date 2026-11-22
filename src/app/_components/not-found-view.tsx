@@ -34,14 +34,14 @@ export async function NotFoundView() {
       title: "All trips",
       href: "/trips",
       body: listable.length
-        ? `${listable.length} group ${listable.length === 1 ? "trip" : "trips"} on the board${priceFrom !== null ? `, from ${formatINR(priceFrom)}` : ""}.`
-        : "Every group trip on the board, with live seats.",
+        ? `${listable.length} ${listable.length === 1 ? "trip" : "trips"} on the board${priceFrom !== null ? `, from ${formatINR(priceFrom)}` : ""}.`
+        : "Every trip on the board, with live seats.",
     },
     {
       n: 3,
       title: "How it works",
       href: "/how-it-works",
-      body: "Request a seat, take our call, show up and go.",
+      body: "Pick a date, pay for your seat, show up and go.",
     },
   ];
 

@@ -8,7 +8,7 @@ export const typeScale = [
   { cls: "type-h4", name: "h4", spec: "18 / 1.3 · 700 · 110% (17)", sample: "What happens after I request a seat?" },
   { cls: "type-body-l", name: "body-l", spec: "19 / 1.55 · 400 (17)", sample: "Pick a date, grab a seat in a group of up to 18." },
   { cls: "type-body", name: "body", spec: "16 / 1.55 · 400", sample: "Three nights in a family homestay below Chowrasta." },
-  { cls: "type-small text-muted", name: "small", spec: "14 / 1.45 · 400 · muted", sample: "Final amount confirmed on the call." },
+  { cls: "type-small text-muted", name: "small", spec: "14 / 1.45 · 400 · muted", sample: "Taxes included, no booking fee." },
   { cls: "type-label", name: "label", spec: "Plex 500 · 12 · 0.08em · caps", sample: "Why Ghumbo" },
   { cls: "type-data", name: "data", spec: "Plex 600 · 16 / 1.2 · 0.02em (15)", sample: "SAT 26 DEC · 11:00 · GH-26DEC-4821" },
   { cls: "type-price-l", name: "price-l", spec: "36 / 1 · 800 · 115% (30)", sample: "≈ ₹18,998" },

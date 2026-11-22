@@ -24,7 +24,7 @@ export function ActionsSections() {
           <div className="grid gap-x-5 gap-y-6 sm:grid-cols-3 lg:grid-cols-5">
             {(["l", "m"] as const).map((size) => (
               <div key={size} className="contents">
-                <Spec label={`Primary ${size.toUpperCase()}`}><Button size={size} className="self-start">Request my seat →</Button></Spec>
+                <Spec label={`Primary ${size.toUpperCase()}`}><Button size={size} className="self-start">Grab my seat →</Button></Spec>
                 <Spec label={`Secondary ${size.toUpperCase()}`}><Button size={size} variant="secondary" className="self-start">See departures</Button></Spec>
                 <Spec label={`Destructive ${size.toUpperCase()}`}><Button size={size} variant="destructive" className="self-start">Withdraw request</Button></Spec>
                 <Spec label={`Destructive confirm ${size.toUpperCase()}`}><Button size={size} variant="danger" className="self-start">Delete account</Button></Spec>

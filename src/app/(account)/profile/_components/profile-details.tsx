@@ -9,9 +9,11 @@ import { formatMonthYear, formatPhone, machineLines } from "@/features/account/l
 import { SignOutButton } from "@/features/auth/components/sign-out-button";
 import { fullName, initials, photoUrl } from "@/features/auth/session";
 import type { User } from "@/features/auth/types";
+import { SavedTravelers } from "@/features/travelers/components/saved-travelers";
 
 const SECTIONS = [
   { id: "details", label: "Details" },
+  { id: "travellers", label: "Saved travellers" },
   { id: "sign-out", label: "Sign out" },
 ];
 
@@ -48,6 +50,7 @@ export function ProfileDetails() {
 
           <div className="flex min-w-0 flex-col gap-6">
             <TravellerCard user={user} />
+            <SavedTravelers user={user} />
             <section
               id="sign-out"
               aria-labelledby="sign-out-h"

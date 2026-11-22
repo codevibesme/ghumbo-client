@@ -41,7 +41,7 @@ export function SeatSquares({ left, total, className }: { left: number; total: n
   );
 }
 
-export function SeatCaption({ left, total }: { left: number; total: number }) {
+export function SeatCaption({ left }: { left: number; total?: number }) {
   return (
     <span
       className={cn(
@@ -49,7 +49,7 @@ export function SeatCaption({ left, total }: { left: number; total: number }) {
         left <= FEW_SEATS ? "text-amber" : "text-green",
       )}
     >
-      {seatCaption(left, total)}
+      {seatCaption(left)}
     </span>
   );
 }
@@ -72,7 +72,7 @@ export function DeparturePicker({
             key={d.id}
             value={d.id}
             disabled={soldOut}
-            aria-label={`${d.start} to ${d.end}, ${formatINR(d.price)} per person, ${seatCaption(d.seatsLeft, d.totalSeats)}${d.peak ? ", peak" : ""}`}
+            aria-label={`${d.start} to ${d.end}, ${formatINR(d.price)} per person, ${seatCaption(d.seatsLeft)}${d.peak ? ", peak" : ""}`}
             className={cn(
               radioCardClasses,
               "grid grid-cols-[20px_minmax(0,1fr)_auto_auto] items-center gap-3 px-4 py-3.5",
@@ -111,14 +111,14 @@ export function DepartureChooser({
   departures,
   from,
   to,
-  requestHref,
+  bookHref,
   defaultId,
 }: {
   departures: Departure[];
   from: string;
   to: string;
-  /** Request page URL; "?departure=<id>" is appended for the selected date. */
-  requestHref: string;
+  /** Checkout URL; "?departure=<id>" is appended for the selected date. */
+  bookHref: string;
   defaultId?: string;
 }) {
   const [selected, setSelected] = useState(
@@ -134,7 +134,7 @@ export function DepartureChooser({
         onValueChange={setSelected}
         aria-label={`Departures for ${to}`}
       />
-      <GroupPass from={from} to={to} departure={dep} requestHref={`${requestHref}?departure=${encodeURIComponent(dep.id)}`} />
+      <GroupPass from={from} to={to} departure={dep} bookHref={`${bookHref}?departure=${encodeURIComponent(dep.id)}`} />
     </div>
   );
 }
@@ -146,12 +146,12 @@ export function DepartureChooser({
 /** Holds the selected departure for everything below it (picker, pass, fares, sticky bar). */
 export function DepartureSelectionProvider({
   departures,
-  requestHref,
+  bookHref,
   children,
 }: {
   departures: Departure[];
-  /** Request page URL; "?departure=<id>" is appended for the selected date. */
-  requestHref: string;
+  /** Checkout URL; "?departure=<id>" is appended for the selected date. */
+  bookHref: string;
   children: ReactNode;
 }) {
   const [selectedId, select] = useState(() => departures.find((d) => d.seatsLeft > 0)?.id ?? departures[0]?.id);
@@ -159,9 +159,9 @@ export function DepartureSelectionProvider({
   const value = useMemo(
     () =>
       selected
-        ? { departures, selected, select, requestHref: `${requestHref}?departure=${encodeURIComponent(selected.id)}` }
+        ? { departures, selected, select, bookHref: `${bookHref}?departure=${encodeURIComponent(selected.id)}` }
         : null,
-    [departures, selected, requestHref],
+    [departures, selected, bookHref],
   );
   return <DepartureSelectionContext value={value}>{children}</DepartureSelectionContext>;
 }
@@ -199,8 +199,8 @@ export function SelectedDayDate({ day }: { day: number }) {
 }
 
 export function SelectedGroupPass({ from, to }: { from: string; to: string }) {
-  const { selected, requestHref } = useDepartureSelection();
-  return <GroupPass from={from} to={to} departure={selected} requestHref={requestHref} changeHref="#departures" />;
+  const { selected, bookHref } = useDepartureSelection();
+  return <GroupPass from={from} to={to} departure={selected} bookHref={bookHref} changeHref="#departures" />;
 }
 
 /** Phone only: the fares for the picked date, under the picker (the group pass is hidden there). */
@@ -229,13 +229,13 @@ export function SelectedFares({ className }: { className?: string }) {
 }
 
 export function SelectedStickyBar() {
-  const { selected, requestHref } = useDepartureSelection();
+  const { selected, bookHref } = useDepartureSelection();
   const left = selected.seatsLeft;
   return (
     <StickyActionBar
       meta={`${selected.start} · ${left <= FEW_SEATS ? `${pad2(left)} LEFT` : `${pad2(left)} OPEN`}`}
       price={formatINR(selected.price)}
-      href={requestHref}
+      href={bookHref}
     />
   );
 }

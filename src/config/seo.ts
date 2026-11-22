@@ -32,6 +32,8 @@ export const DISALLOWED_PATHS = [
   "/my-trips",
   "/profile",
   "/trips/*/request",
+  "/trips/*/book",
+  "/trips/*/payment",
 ];
 
 /** TravelAgency + WebSite, rendered once in the root layout (§5). No ratings here. */
@@ -48,7 +50,7 @@ export function siteLd() {
         logo: LOGO_URL,
         image: LOGO_URL,
         description:
-          "Fixed-departure budget group trips across India for 20–35 year-olds. Request a seat, take our call, pay through a secure link.",
+          "Fully planned, fixed-date trips across India for students and young professionals. Pick a date, pay online, just show up.",
         email: supportEmail,
         ...(supportPhone && { telephone: supportPhone.e164 }),
         address: { "@type": "PostalAddress", streetAddress: business.address, addressCountry: "IN" },
