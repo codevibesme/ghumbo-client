@@ -76,12 +76,12 @@ const WHY: { icon: ReactNode; title: string; body: string }[] = [
   {
     icon: <Calendar size={24} strokeWidth={1.75} aria-hidden />,
     title: "Fixed dates",
-    body: "Every trip leaves on a set day. Pick one, grab a seat, done. No group chat needed.",
+    body: "Every trip leaves on a set day. Pick one, grab a seat, done. No 40-tab planning spree.",
   },
   {
     icon: <Users size={24} strokeWidth={1.75} aria-hidden />,
-    title: "Groups of up to 18",
-    body: "Big enough to make friends, small enough to fit in one Tempo Traveller.",
+    title: "One price, all in",
+    body: "Stays, transfers, permits and your coordinator in one payment. Taxes included, no surprise add-ons.",
   },
   {
     icon: <Ticket size={24} strokeWidth={1.75} aria-hidden />,
@@ -118,10 +118,10 @@ export function WhyGhumbo() {
 
 const STEPS = [
   { title: "Pick a date", body: "Choose a trip and a fixed departure. Seats left are live on the board." },
-  { title: "Request a seat", body: "Tell us who is coming. No payment now. We call within 24 hours." },
+  { title: "Pay for your seat", body: "One payment, taxes included. Done. 90% back if plans change 30+ days out." },
   {
-    title: "Confirm and go",
-    body: "After the call, pay in full by secure link and your seat is confirmed. Trip pack a week before; meet the group at the hub.",
+    title: "Show up",
+    body: "Trip pack lands 7 days before. Meet your coordinator at the station.",
   },
 ];
 

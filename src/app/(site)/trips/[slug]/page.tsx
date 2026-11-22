@@ -49,7 +49,7 @@ export async function generateMetadata({ params }: PageProps<"/trips/[slug]">): 
   const from = departures.length ? Math.min(...departures.map((d) => d.price)) : null;
   const cover = trip.assets[0];
   return {
-    title: `${trip.name} · ${duration(trip.durationDays, trip.durationNights).replaceAll(" ", "")} group trip${from ? ` from ${formatINR(from)}` : ""}`,
+    title: `${trip.name} · ${duration(trip.durationDays, trip.durationNights).replaceAll(" ", "")} trip${from ? ` from ${formatINR(from)}` : ""}`,
     description: trip.overview.slice(0, 157).replace(/\s\S*$/, "") + "…",
     alternates: { canonical: `/trips/${trip.slug}` },
     openGraph: cover ? { images: [{ url: cover.url, alt: cover.label ?? trip.name }] } : undefined,
@@ -69,15 +69,14 @@ export default async function TripPage({ params }: PageProps<"/trips/[slug]">) {
 }
 
 async function TripView({ data }: { data: TripPageData }) {
-  const { trip, place, ends, departures, rawDepartures } = data;
+  const { trip, place, ends, departures } = data;
   const destination = place?.destination;
-  const requestHref = `/trips/${trip.slug}/request`;
+  const bookHref = `/trips/${trip.slug}/book`;
   const [reviews, siblings] = await Promise.all([
     getReviews(trip.id),
     destination ? getTripsByDestination(destination.slug) : Promise.resolve([]),
   ]);
   const similar = toTourSummaries(siblings.filter((t) => t.id !== trip.id)).slice(0, 3);
-  const capacity = rawDepartures[0]?.capacity ?? 18;
   const first = departures.find((d) => d.seatsLeft > 0);
   const photos = trip.assets.filter((a) => a.type === "image");
   const activities = trip.itinerary.days.map(toActivities);
@@ -101,13 +100,13 @@ async function TripView({ data }: { data: TripPageData }) {
       <JsonLd data={breadcrumbLd(crumbs)} />
       {trip.faq.length > 0 && <JsonLd data={faqLd(trip.faq)} />}
 
-      <TripHeader data={data} crumbs={crumbs} capacity={capacity} />
+      <TripHeader data={data} crumbs={crumbs} />
 
       <section aria-label="Photos" className="page-container">
         <PhotoGallery photos={photos} alt={trip.name} />
       </section>
 
-      <DepartureSelectionProvider departures={departures} requestHref={requestHref}>
+      <DepartureSelectionProvider departures={departures} bookHref={bookHref}>
         <div className="page-container pt-10 md:pt-20">
           <div
             style={{ "--left-rows": leftSections } as CSSProperties}
@@ -127,7 +126,7 @@ async function TripView({ data }: { data: TripPageData }) {
 
             <section id="departures" aria-labelledby="h-dep" className={`${left} flex scroll-mt-24 flex-col gap-6`}>
               <SectionHeader
-                kicker={`${departures.length} fixed ${departures.length === 1 ? "date" : "dates"} · group of up to ${capacity}`}
+                kicker={`${departures.length} fixed ${departures.length === 1 ? "date" : "dates"} · seats update live`}
                 title={<span id="h-dep">Choose a departure</span>}
               />
               {hasPass ? (
@@ -136,7 +135,7 @@ async function TripView({ data }: { data: TripPageData }) {
                   <PeakNote />
                   <SelectedFares className="md:hidden" />
                   <p className="m-0 font-mono text-[12px] font-medium leading-[1.4] tracking-[0.04em] text-muted">
-                    PER PERSON, TWIN SHARING · TAXES INCLUDED · EACH SQUARE IS ONE SEAT IN A GROUP OF {capacity}
+                    PER PERSON, TWIN SHARING · TAXES INCLUDED · EACH SQUARE IS ONE SEAT
                   </p>
                   <SeatLegend />
                 </div>
@@ -238,11 +237,9 @@ function SeatLegend() {
 function TripHeader({
   data: { trip, ends, place },
   crumbs,
-  capacity,
 }: {
   data: TripPageData;
   crumbs: { name: string; path: string }[];
-  capacity: number;
 }) {
   const destination = place?.destination;
   return (
@@ -270,7 +267,7 @@ function TripHeader({
           </li>
         )}
         <li className="flex items-center gap-2">
-          <Users size={20} strokeWidth={1.75} aria-hidden className="text-link" /> Group of up to {capacity}
+          <Users size={20} strokeWidth={1.75} aria-hidden className="text-link" /> Fully planned
         </li>
       </ul>
     </section>
@@ -401,14 +398,14 @@ function MeetingPoint({ ends, steps, lastDay, className }: { ends: TripPageData[
   );
 }
 
-/** "Questions before you request? Call …": under the pass on desktop, before Reviews on phones. */
+/** "Questions before you book? Call …": under the pass on desktop, before Reviews on phones. */
 function CallUs({ className }: { className?: string }) {
   if (!supportPhone) return null;
   return (
     <div className={`flex items-start gap-3 rounded-ticket border-2 border-dashed border-tear px-4 py-4 md:px-5 ${className ?? ""}`}>
       <Phone size={20} strokeWidth={1.75} aria-hidden className="mt-0.5 shrink-0 text-link" />
       <p className="m-0 text-[14px] leading-[1.45]">
-        Questions before you request? Call{" "}
+        Questions before you book? Call{" "}
         <a href={supportPhone.href} className="whitespace-nowrap font-semibold text-link underline underline-offset-[3px]">
           {supportPhone.display}
         </a>
@@ -421,7 +418,7 @@ function CallUs({ className }: { className?: string }) {
 function Reviews({ reviews, next, className }: { reviews: TripReview[]; next: Departure | undefined; className?: string }) {
   return (
     <section className={`flex flex-col gap-6 ${className}`}>
-      <SectionHeader kicker="From the group" title="Reviews" />
+      <SectionHeader kicker="From travellers" title="Reviews" />
       {reviews.length > 0 ? (
         <ul className="m-0 grid list-none gap-6 p-0 md:grid-cols-2">
           {reviews.map((r) => (
@@ -441,8 +438,8 @@ function Reviews({ reviews, next, className }: { reviews: TripReview[]; next: De
           }
         >
           {next
-            ? `This trip’s next group leaves ${next.start}. Reviews open when they’re back, and only travellers can write one.`
-            : "Reviews open after the first group is back, and only travellers can write one."}
+            ? `This trip’s first departure leaves ${next.start}. Reviews open when they’re back, and only travellers can write one.`
+            : "Reviews open after the first departure is back, and only travellers can write one."}
         </EmptyState>
       )}
     </section>

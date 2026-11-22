@@ -4,9 +4,9 @@ import { TearLine } from "@/components/ui/tear-line";
 export type AuthPhoto = { src: string; alt: string };
 
 const STUBS = [
-  ["Requests", "Tracked live"],
-  ["Call-back", "Within 24 hours"],
-  ["Payment", "By secure link"],
+  ["Bookings", "Tracked live"],
+  ["Payment", "UPI, card, netbanking"],
+  ["Seats", "Locked when you pay"],
 ] as const;
 
 /** Right half of the sign-in split (960px and up): a photo ticket on the passport-navy panel. */

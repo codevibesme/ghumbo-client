@@ -1,8 +1,8 @@
 /**
  * Copy rules from the Ticket system (B · Colour, type, parts → Badges):
- *   seats ≥ 7 → "14 OPEN", 2–6 → "04 LEFT", 1 → "LAST SEAT", 0 → "SOLD OUT"
- *   captions beside seat squares → "14 OF 18 OPEN" / "04 OF 18 LEFT"
- * Counts are always two digits, zero-padded.
+ *   badges: seats ≥ 7 → "14 seats left", 2–6 → "Only 4 left", 1 → "Last seat", 0 → "Sold out"
+ *   captions beside seat squares → "14 SEATS LEFT" / "ONLY 4 LEFT. MOVE FAST."
+ *   sticky-bar meta keeps the two-digit form: "04 LEFT" / "14 OPEN".
  */
 
 export const FEW_SEATS = 6;
@@ -27,16 +27,14 @@ export function seatLabel(left: number) {
     case "last":
       return "Last seat";
     case "few":
-      return `${pad2(left)} left`;
+      return `Only ${left} left`;
     default:
-      return `${pad2(left)} open`;
+      return `${left} seats left`;
   }
 }
 
-export function seatCaption(left: number, total: number) {
-  return left <= FEW_SEATS
-    ? `${pad2(left)} of ${total} left`
-    : `${pad2(left)} of ${total} open`;
+export function seatCaption(left: number) {
+  return left <= FEW_SEATS ? `Only ${left} left. Move fast.` : `${left} seats left`;
 }
 
 const inr = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 });

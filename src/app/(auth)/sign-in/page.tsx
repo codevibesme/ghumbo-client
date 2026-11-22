@@ -21,8 +21,8 @@ export default async function SignInPage({ searchParams }: PageProps<"/sign-in">
         <h1 className="m-0 type-h1">Your trips, one&nbsp;ticket.</h1>
       </header>
       <p className="m-0 mt-2 max-w-[52ch] type-body-l">
-        Sign in to track your seat requests and see when we&rsquo;ve called. No passwords: we send you a one-time
-        code. New here? Verifying your email creates your account.
+        Sign in to book, pay and keep your trips and invoices in one place. No passwords: we send you a one-time code.
+        New here? Verifying your number or email creates your account.
       </p>
       <Suspense fallback={<SignInForm next="/" />}>
         <SignInFormForRequest searchParams={searchParams} />

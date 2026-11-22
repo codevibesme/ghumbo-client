@@ -22,11 +22,11 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://ghumbo.com"),
   title: {
-    default: "Ghumbo · Budget group trips across India",
+    default: "Ghumbo · Fully planned trips across India",
     template: "%s · Ghumbo",
   },
   description:
-    "Fixed-departure group trips for 20–35 year-olds. Pick a date, request a seat, we call you within 24 hours. First stop: West Bengal.",
+    "Travel more. Plan less. Fully planned trips across India, on fixed dates: stays, transfers, permits and the 4 am alarm, all sorted. Pick a date, pay online, just show up.",
   applicationName: "Ghumbo",
   openGraph: { type: "website", siteName: "Ghumbo", locale: "en_IN" },
   twitter: { card: "summary_large_image" },

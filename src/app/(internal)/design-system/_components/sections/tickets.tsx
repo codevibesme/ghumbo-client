@@ -44,7 +44,7 @@ export function TicketsSections() {
             departures={departures}
             from="NJP"
             to="Darjeeling"
-            requestHref="/trips/darjeeling-queen-of-the-hills/request"
+            bookHref="/trips/darjeeling-queen-of-the-hills/book"
             defaultId="2026-12-26"
           />
         </Section>

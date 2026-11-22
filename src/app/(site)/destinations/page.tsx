@@ -9,7 +9,7 @@ import { PlaceCards } from "./_components/place-cards";
 
 export const metadata: Metadata = {
   title: "Destinations",
-  description: "Where Ghumbo runs fixed-date group trips, and where we open next.",
+  description: "Where Ghumbo runs fully planned trips, and where we open next.",
   alternates: { canonical: "/destinations" },
 };
 
