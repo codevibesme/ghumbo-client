@@ -44,7 +44,7 @@ const sections: LegalSection[] = [
     body: (
       <>
         <p>
-          When you press Pay at checkout we hold your seats for 10 minutes while you pay on Razorpay’s secure page.
+          When you press Pay at checkout we hold your seats for 10 minutes while you pay in Razorpay’s secure checkout.
           Nothing is charged until the payment goes through. If you don’t finish paying in time, the booking expires,
           the seats go back on sale and there’s nothing to cancel. You can start a new booking from{" "}
           <Link href="/my-trips">My trips</Link>.

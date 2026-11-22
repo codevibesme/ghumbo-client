@@ -251,7 +251,7 @@ function Failed({ booking: b, onGone }: { booking: UserBooking; onGone: () => vo
       <div className="flex flex-col items-start gap-2">
         <PayButton booking={b} label={`Retry payment · ${amountLabel(b)} →`} onGone={onGone} />
         <span className="font-mono text-[12px] font-medium uppercase tracking-[0.04em] text-muted">
-          Takes you to Razorpay’s secure checkout
+          Opens Razorpay’s secure checkout
         </span>
       </div>
       <BookingStrip booking={b}>

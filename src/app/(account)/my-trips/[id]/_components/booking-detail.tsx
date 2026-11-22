@@ -122,7 +122,7 @@ function Pending({ booking: b, onGone }: { booking: UserBooking; onGone: () => v
             <HoldClock expiresAt={b.expiresAt} className="text-center text-[48px] leading-none md:text-[56px]" />
             <PayButton booking={b} fullWidth label={`Pay ${amountLabel(b)}`} onGone={onGone} />
             <span className="text-center font-mono text-[11px] font-medium uppercase tracking-[0.04em] text-muted">
-              Takes you to Razorpay’s secure checkout
+              Opens Razorpay’s secure checkout
             </span>
           </div>
         </div>

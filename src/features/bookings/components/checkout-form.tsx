@@ -3,7 +3,7 @@
 import { Check, Lock, Plus, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -23,11 +23,11 @@ import { ApiError } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { formatINR, pad2 } from "@/lib/format";
 import { useToday } from "@/lib/use-today";
-import { createBooking, getAllMyBookings } from "../api";
-import { goToRazorpay, razorpayKeyId, ulid } from "../checkout";
+import { createBooking, getAllMyBookings, retryPayment } from "../api";
+import { openRazorpay, paymentResultHref, razorpayKeyId, ulid } from "../checkout";
 import { bookingHref } from "../lib";
 import type { PaymentOrder } from "../types";
-import { OffToRazorpay } from "./off-to-razorpay";
+import { HoldBanner } from "./hold-banner";
 
 /** Most travellers on one booking; the date's seats left can lower it. */
 const MAX_TRAVELLERS = 8;
@@ -82,7 +82,8 @@ export function CheckoutForm({
   const [picked, setPicked] = useState<string[] | null>(null);
   const [e, setErrors] = useState<Errors>({});
   const [pending, setPending] = useState(false);
-  const [handoff, setHandoff] = useState<{ order: PaymentOrder; expiresAt: string } | null>(null);
+  // Set once the booking exists: its seats are held while Razorpay's panel is open, and after it's closed.
+  const [held, setHeld] = useState<{ bookingId: string; expiresAt: string } | null>(null);
   const bookingId = useRef<string | null>(null);
 
   const max = Math.max(0, Math.min(MAX_TRAVELLERS, departure.seatsLeft));
@@ -91,14 +92,32 @@ export function CheckoutForm({
   const count = selected.length;
   const totalAmount = departure.price * count;
 
-  // Hand off once the order exists.
-  useEffect(() => {
-    if (handoff && user) goToRazorpay(handoff.order, prefill(user), trip.name);
-  }, [handoff, user, trip.name]);
+  /** Opens Razorpay's panel on this page. Paid → the result page; closed → back here with the hold. */
+  function pay(order: PaymentOrder, user: User) {
+    return openRazorpay(order, prefill(user), trip.name, {
+      paid: () => router.push(paymentResultHref(order.bookingId)),
+      dismissed: () => setPending(false),
+    });
+  }
+
+  /** Pay again after closing the panel: same booking, a fresh order from the backend (which checks the hold). */
+  async function reopen(user: User, bookingId: string) {
+    setPending(true);
+    setErrors({});
+    try {
+      await pay(await retryPayment(bookingId), user);
+    } catch (err) {
+      setPending(false);
+      // Hold over or already paid: the booking page shows which.
+      if (err instanceof ApiError && err.status === 409) return router.push(bookingHref({ id: bookingId }));
+      setErrors({ form: openError(err) });
+    }
+  }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!user || pending) return;
+    if (held) return reopen(user, held.bookingId);
     const errors = checkErrors(count, max, new FormData(event.currentTarget).get("consent") === "on");
     if (Object.keys(errors).length) return setErrors(errors);
 
@@ -106,9 +125,9 @@ export function CheckoutForm({
     setErrors({});
     // One id per attempt, so a double tap or a retry after a network blip can't book twice.
     bookingId.current ??= ulid();
+    let order: PaymentOrder;
     try {
-      const order = await createBooking({ id: bookingId.current, departureId: departure.id, travelerIds: selected });
-      setHandoff({ order, expiresAt: new Date(Date.now() + HOLD_MS).toISOString() });
+      order = await createBooking({ id: bookingId.current, departureId: departure.id, travelerIds: selected });
     } catch (err) {
       setPending(false);
       if (err instanceof ApiError) bookingId.current = null;
@@ -118,21 +137,18 @@ export function CheckoutForm({
         const open = mine.find((b) => b.departureId === departure.id && b.status === "pending");
         if (open) return router.push(bookingHref(open));
       }
-      setErrors(bookingError(err));
+      return setErrors(bookingError(err));
+    }
+    setHeld({ bookingId: order.bookingId, expiresAt: new Date(Date.now() + HOLD_MS).toISOString() });
+    try {
+      await pay(order, user);
+    } catch (err) {
+      setPending(false);
+      setErrors({ form: openError(err) });
     }
   }
 
-  if (handoff) {
-    return (
-      <OffToRazorpay
-        expiresAt={handoff.expiresAt}
-        amount={formatINR(Number(handoff.order.amount))}
-        onRetry={() => user && goToRazorpay(handoff.order, prefill(user), trip.name)}
-      />
-    );
-  }
-
-  if (max === 0) {
+  if (max === 0 && !held) {
     return (
       <div className="flex flex-col items-start gap-3 rounded-ticket border-2 border-dashed border-tear px-6 py-8">
         <h2 className="m-0 type-h3">Sold out. Join the next one.</h2>
@@ -144,35 +160,43 @@ export function CheckoutForm({
 
   return (
     <div className="grid items-start gap-8 min-[960px]:grid-cols-[minmax(0,1fr)_400px]">
+      {held && !pending && (
+        <HoldBanner expiresAt={held.expiresAt} className="min-[960px]:col-span-2">
+          Closed Razorpay? Your seats are still yours. Tap Pay to pick up where you left off.
+        </HoldBanner>
+      )}
       <form id={formId} onSubmit={onSubmit} noValidate aria-label="Checkout" className="flex min-w-0 flex-col gap-6">
-        <TravellersStep
-          user={user}
-          travellers={travellers}
-          selected={selected}
-          max={max}
-          error={e.travellers}
-          onChange={(ids) => {
-            setErrors((prev) => ({ ...prev, travellers: undefined }));
-            setPicked(ids);
-          }}
-        />
+        {/* Once the booking exists its travellers are locked; Pay reopens Razorpay for the same booking. */}
+        <fieldset disabled={Boolean(held)} className="m-0 flex min-w-0 flex-col gap-6 border-0 p-0">
+          <TravellersStep
+            user={user}
+            travellers={travellers}
+            selected={selected}
+            max={max}
+            error={e.travellers}
+            onChange={(ids) => {
+              setErrors((prev) => ({ ...prev, travellers: undefined }));
+              setPicked(ids);
+            }}
+          />
 
-        <Step n={2} title="Where we send the good stuff">
-          <p className="m-0 text-[15px] leading-normal text-muted">
-            Your receipt, invoice and trip pack go here. Your coordinator texts this number on day one.
-          </p>
-          <dl className="m-0 flex flex-wrap gap-x-8 gap-y-3">
-            <ContactFact label="Email">{user?.email ?? <span className="text-muted">Not added</span>}</ContactFact>
-            <ContactFact label="Mobile">
-              {user?.phone ? <span className="font-mono">{formatPhone(user.phone)}</span> : <span className="text-muted">Not added</span>}
-            </ContactFact>
-            <Link href="/profile" className="self-end py-3 text-[14px] font-semibold leading-none text-link">
-              Change
-            </Link>
-          </dl>
-        </Step>
+          <Step n={2} title="Where we send the good stuff">
+            <p className="m-0 text-[15px] leading-normal text-muted">
+              Your receipt, invoice and trip pack go here. Your coordinator texts this number on day one.
+            </p>
+            <dl className="m-0 flex flex-wrap gap-x-8 gap-y-3">
+              <ContactFact label="Email">{user?.email ?? <span className="text-muted">Not added</span>}</ContactFact>
+              <ContactFact label="Mobile">
+                {user?.phone ? <span className="font-mono">{formatPhone(user.phone)}</span> : <span className="text-muted">Not added</span>}
+              </ContactFact>
+              <Link href="/profile" className="self-end py-3 text-[14px] font-semibold leading-none text-link">
+                Change
+              </Link>
+            </dl>
+          </Step>
 
-        <RefundStep errors={e} />
+          <RefundStep errors={e} />
+        </fieldset>
       </form>
 
       <div className="flex w-full flex-col gap-4 min-[960px]:sticky min-[960px]:top-6">
@@ -184,7 +208,7 @@ export function CheckoutForm({
               disabled={pending || !user}
               className={buttonClasses({ variant: "danger", fullWidth: true, className: "h-14 text-[17px]" })}
             >
-              {pending ? "Holding your seats…" : count ? `Pay ${formatINR(totalAmount)}` : "Pick your travellers"}
+              {pending ? (held ? "Opening Razorpay…" : "Holding your seats…") : count ? `Pay ${formatINR(totalAmount)}` : "Pick your travellers"}
             </button>
             <PayNote />
           </div>
@@ -211,6 +235,13 @@ function checkErrors(count: number, max: number, consent: boolean): Errors {
   if (!consent) errors.consent = "Tick this to continue.";
   if (!razorpayKeyId) errors.form = `Payments are switched off right now. Write to ${supportEmail} and we’ll sort it.`;
   return errors;
+}
+
+/** checkout.js didn't load or the order couldn't be fetched again. */
+function openError(err: unknown) {
+  return err instanceof ApiError
+    ? `We couldn’t open the payment just now. Try again in a moment, or write to ${supportEmail}.`
+    : "Razorpay’s checkout didn’t open. Check your connection and tap Pay again.";
 }
 
 /** POST /billings/bookings failures, in words. */
@@ -374,7 +405,7 @@ function PayNote() {
   return (
     <>
       <p className="m-0 text-center text-[13px] leading-[1.45] text-muted">
-        You’ll pay on Razorpay’s secure page, then land straight back here. Your seats are held for 10 minutes.
+        Razorpay’s secure checkout opens right here. Your seats are held for 10 minutes.
       </p>
       <p className="m-0 flex flex-wrap items-center justify-center gap-1.5 text-center font-mono text-[11px] font-medium uppercase leading-[1.4] tracking-[0.06em] text-muted">
         <Lock size={14} aria-hidden />

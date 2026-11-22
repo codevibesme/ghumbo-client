@@ -1,16 +1,56 @@
-import { API_URL } from "@/lib/api";
 import type { PaymentOrder } from "./types";
 
 /*
- * Hand-off to Razorpay's hosted checkout, in the same tab. Razorpay POSTs the
- * result (paid or failed) to the backend's callback, which 303s back to
- * /trips/:bookingId/payment. Pressing Cancel on Razorpay's page lands on the
- * booking in My trips, where the hold timer and Pay button are.
+ * Razorpay Standard Checkout, on our page (22 Nov 2026). Paying opens Razorpay's panel over
+ * the page, branded from Razorpay Dashboard → Checkout Styling. When the payment succeeds the
+ * panel calls `onPaid` and we move to /trips/:bookingId/payment, which polls the booking; only
+ * the webhook (order.paid) confirms it. Failures are retried inside the panel. Closing it calls
+ * `onDismiss`, and the booking keeps its 10-minute hold.
  */
 
-const HOSTED_CHECKOUT_URL = "https://api.razorpay.com/v1/checkout/embedded";
+const SCRIPT_URL = "https://checkout.razorpay.com/v1/checkout.js";
 
 export const razorpayKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID?.trim() || null;
+
+type RazorpayOptions = {
+  key: string;
+  order_id: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  prefill: { name?: string; email?: string; contact?: string };
+  notes: Record<string, string>;
+  theme: { color: string };
+  handler: () => void;
+  modal: { ondismiss: () => void; escape: boolean };
+};
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: RazorpayOptions) => { open: () => void };
+  }
+}
+
+let loading: Promise<void> | null = null;
+
+/** Loads checkout.js once. A failed load can be retried. */
+function loadRazorpay(): Promise<void> {
+  if (window.Razorpay) return Promise.resolve();
+  loading ??= new Promise<void>((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = SCRIPT_URL;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => {
+      loading = null;
+      script.remove();
+      reject(new Error("Razorpay checkout didn’t load"));
+    };
+    document.head.append(script);
+  });
+  return loading;
+}
 
 const CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 
@@ -26,38 +66,39 @@ export function ulid(now = Date.now()) {
 
 export type Prefill = { name: string; email: string | null; contact: string | null };
 
-/** Builds and submits the hosted-checkout form. The page navigates away. */
-export function goToRazorpay(order: PaymentOrder, prefill: Prefill, description: string) {
+/** Where a successful payment lands: the result page polls the booking until the webhook confirms it. */
+export const paymentResultHref = (bookingId: string) => `/trips/${encodeURIComponent(bookingId)}/payment?status=success`;
+
+/**
+ * Opens Razorpay's panel for this order. Resolves once it's open; rejects if checkout.js can't
+ * load (offline, blocked) so the caller can show an error and let them try again.
+ */
+export async function openRazorpay(
+  order: PaymentOrder,
+  prefill: Prefill,
+  description: string,
+  on: { paid: () => void; dismissed: () => void },
+) {
   if (!razorpayKeyId) throw new Error("NEXT_PUBLIC_RAZORPAY_KEY_ID is not set");
-  const origin = window.location.origin;
-  const fields: Record<string, string> = {
-    key_id: razorpayKeyId,
+  await loadRazorpay();
+  if (!window.Razorpay) throw new Error("Razorpay checkout didn’t load");
+  const checkout = new window.Razorpay({
+    key: razorpayKeyId,
     order_id: order.orderId,
-    amount: String(Math.round(Number(order.amount) * 100)),
+    amount: Math.round(Number(order.amount) * 100),
     currency: order.currency.toUpperCase(),
     name: "Ghumbo",
     description,
-    "prefill[name]": prefill.name,
-    ...(prefill.email && { "prefill[email]": prefill.email }),
-    ...(prefill.contact && { "prefill[contact]": prefill.contact }),
-    "notes[bookingId]": order.bookingId,
-    callback_url: `${API_URL}/billings/razorpay/callback`,
-    cancel_url: `${origin}/my-trips/${encodeURIComponent(order.bookingId)}`,
-  };
-
-  const form = document.createElement("form");
-  form.method = "POST";
-  form.action = HOSTED_CHECKOUT_URL;
-  for (const [name, value] of Object.entries(fields)) {
-    const input = document.createElement("input");
-    input.type = "hidden";
-    input.name = name;
-    input.value = value;
-    form.append(input);
-  }
-  document.body.append(form);
-
-  // Back from Razorpay should land on the booking, not on a checkout that would book again.
-  window.history.replaceState(window.history.state, "", `/my-trips/${encodeURIComponent(order.bookingId)}`);
-  form.submit();
+    prefill: {
+      name: prefill.name || undefined,
+      email: prefill.email ?? undefined,
+      contact: prefill.contact ?? undefined,
+    },
+    notes: { bookingId: order.bookingId },
+    // Passport navy, as on our buttons; logo, font and background come from Checkout Styling.
+    theme: { color: "#1F3A5F" },
+    handler: on.paid,
+    modal: { ondismiss: on.dismissed, escape: true },
+  });
+  checkout.open();
 }
