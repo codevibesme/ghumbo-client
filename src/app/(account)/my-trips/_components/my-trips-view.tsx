@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { buttonClasses } from "@/components/ui/variants";
 import { useSignedInUser } from "@/features/account/hooks";
 import { fullName } from "@/features/auth/session";
-import { BookingCard, MissedRow, PendingCard } from "@/features/bookings/components/booking-card";
+import { BookingCard, CancelledRow, MissedRow, PendingCard } from "@/features/bookings/components/booking-card";
 import { useMyBookings, useNow } from "@/features/bookings/hooks";
 import { type BookingGroups, groupBookings } from "@/features/bookings/lib";
 import { useToday } from "@/lib/use-today";
@@ -22,7 +22,7 @@ const findTrip = (
   </Link>
 );
 
-// T12 / T12b My trips: unpaid bookings (with their hold timer) on top, then upcoming trips, then holds that ran out.
+// T12 / T12b My trips: unpaid bookings (with their hold timer) on top, then upcoming trips, holds that ran out, and cancellations.
 export function MyTripsView() {
   const user = useSignedInUser("/my-trips");
   const today = useToday();
@@ -126,6 +126,21 @@ function TripTabs({
               {groups.missed.slice(0, 5).map((b) => (
                 <li key={b.id}>
                   <MissedRow booking={b} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {groups.cancelled.length > 0 && (
+          <section aria-labelledby="cancelled-h" className="flex flex-col gap-3">
+            <h2 id="cancelled-h" className="m-0 type-stub text-muted">
+              Recently cancelled
+            </h2>
+            <ul className="m-0 flex list-none flex-col gap-3 p-0">
+              {groups.cancelled.slice(0, 5).map((b) => (
+                <li key={b.id}>
+                  <CancelledRow booking={b} />
                 </li>
               ))}
             </ul>

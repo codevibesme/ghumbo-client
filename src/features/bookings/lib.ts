@@ -9,7 +9,7 @@ import type { UserBooking } from "./types";
 /* ------------------------------------------------------------------ */
 
 /** What a booking shows as. An unpaid booking past its hold reads as expired even before the sweeper runs. */
-export type BookingView = "pending" | "confirmed" | "expired";
+export type BookingView = "pending" | "confirmed" | "expired" | "cancelled";
 
 export function bookingView(b: Pick<UserBooking, "status" | "expiresAt">, now: number): BookingView {
   if (b.status === "pending" && Date.parse(b.expiresAt) <= now) return "expired";
@@ -20,6 +20,7 @@ export const VIEW_META: Record<BookingView, { label: string; tone: BadgeTone }> 
   pending: { label: "Payment pending", tone: "few" },
   confirmed: { label: "Confirmed · paid", tone: "open" },
   expired: { label: "Expired", tone: "muted" },
+  cancelled: { label: "Cancelled", tone: "muted" },
 };
 
 /* ------------------------------------------------------------------ */
@@ -80,6 +81,34 @@ export function refundPreview(b: Pick<UserBooking, "amount" | "startDate">, toda
   return { days, keep, back, backPercent: 100 - keep, lastDay, nextBackPercent: floor === null ? null : 100 - keepPercent(floor - 1) };
 }
 
+/**
+ * Where a cancelled booking's refund stands, in the words My trips and the
+ * booking page use. `back` is 0 when it was cancelled under 7 days out.
+ */
+export function cancelledRefund(b: Pick<UserBooking, "refundAmount" | "refundStatus" | "refundedAt" | "currency" | "paymentMethod">) {
+  const back = Number(b.refundAmount ?? 0);
+  const to = `your ${paymentMethodLabel(b.paymentMethod) ?? "account"}`;
+  const amount = money(back, b.currency);
+  if (back <= 0) return { back, badge: "Cancelled", headline: "No refund", detail: "Cancelled under 7 days out", to };
+  if (b.refundStatus === "processed") {
+    const on = b.refundedAt ? ` on ${formatShortDate(b.refundedAt)}` : "";
+    return { back, badge: "Cancelled · refunded", headline: `${amount} refunded`, detail: `To ${to}${on}`, to };
+  }
+  if (b.refundStatus === "failed") {
+    return { back, badge: "Cancelled · refund stuck", headline: `${amount} refund`, detail: "Stuck: we’re on it", to };
+  }
+  return { back, badge: "Cancelled · refund on its way", headline: `${amount} on its way`, detail: `To ${to} in 5–7 working days`, to };
+}
+
+/** "What changed?" in the cancel dialog (T13b). Sent as the cancellation reason. */
+export const CANCEL_REASONS = [
+  "Couldn’t get leave",
+  "Found another date",
+  "Health or family",
+  "Budget",
+  "Something else",
+] as const;
+
 /* ------------------------------------------------------------------ */
 /* My trips grouping                                                    */
 /* ------------------------------------------------------------------ */
@@ -90,11 +119,17 @@ export type BookingGroups = {
   /** Expired bookings for dates that haven't passed: "Didn't go through". */
   missed: UserBooking[];
   past: UserBooking[];
+  /** Cancelled by the traveller, newest first: "Recently cancelled". */
+  cancelled: UserBooking[];
 };
 
 export function groupBookings(list: UserBooking[], today: string, now: number): BookingGroups {
-  const groups: BookingGroups = { pending: [], upcoming: [], missed: [], past: [] };
+  const groups: BookingGroups = { pending: [], upcoming: [], missed: [], past: [], cancelled: [] };
   for (const b of list) {
+    if (b.status === "cancelled") {
+      groups.cancelled.push(b);
+      continue;
+    }
     const ended = b.endDate.slice(0, 10) < today;
     const view = bookingView(b, now);
     if (ended) {
@@ -108,6 +143,7 @@ export function groupBookings(list: UserBooking[], today: string, now: number): 
   groups.upcoming.sort(byStart);
   groups.missed.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   groups.past.sort((a, b) => b.startDate.localeCompare(a.startDate));
+  groups.cancelled.sort((a, b) => (b.cancelledAt ?? b.updatedAt).localeCompare(a.cancelledAt ?? a.updatedAt));
   return groups;
 }
 
